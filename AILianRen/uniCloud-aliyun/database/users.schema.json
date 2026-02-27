@@ -1,0 +1,87 @@
+{
+	"bsonType": "object",
+	"required": ["platform", "device_id", "word_balance", "created_at"],
+	"permission": {
+		"read": "doc._id == auth.uid || auth.permission.admin",
+		"create": true,
+		"update": "doc._id == auth.uid",
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "用户ID"
+		},
+		"platform": {
+			"bsonType": "string",
+			"description": "登录平台（mp-weixin, app, h5等）"
+		},
+		"device_id": {
+			"bsonType": "string",
+			"description": "设备标识"
+		},
+		"gender": {
+			"bsonType": "string",
+			"enum": ["male", "female", ""],
+			"description": "用户性别"
+		},
+		"nickname": {
+			"bsonType": "string",
+			"description": "用户昵称"
+		},
+		"word_balance": {
+			"bsonType": "int",
+			"minimum": 0,
+			"description": "当前字数余额"
+		},
+		"total_words_earned": {
+			"bsonType": "int",
+			"minimum": 0,
+			"description": "累计获得字数"
+		},
+		"total_words_spent": {
+			"bsonType": "int",
+			"minimum": 0,
+			"description": "累计消耗字数"
+		},
+		"login_streak": {
+			"bsonType": "int",
+			"minimum": 0,
+			"description": "连续登录天数"
+		},
+		"last_login_date": {
+			"bsonType": "string",
+			"description": "最后登录日期（YYYY-MM-DD）"
+		},
+		"login_count": {
+			"bsonType": "int",
+			"minimum": 0,
+			"description": "累计登录次数"
+		},
+		"settings": {
+			"bsonType": "object",
+			"description": "用户设置",
+			"properties": {
+				"sound_enabled": {
+					"bsonType": "bool",
+					"description": "音效开关"
+				},
+				"music_enabled": {
+					"bsonType": "bool",
+					"description": "音乐开关"
+				},
+				"notification_enabled": {
+					"bsonType": "bool",
+					"description": "通知开关"
+				}
+			}
+		},
+		"created_at": {
+			"bsonType": "timestamp",
+			"description": "创建时间"
+		},
+		"last_login_at": {
+			"bsonType": "timestamp",
+			"description": "最后登录时间"
+		}
+	}
+}

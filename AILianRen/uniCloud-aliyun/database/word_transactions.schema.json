@@ -1,0 +1,45 @@
+{
+	"bsonType": "object",
+	"required": ["user_id", "type", "amount", "created_at"],
+	"permission": {
+		"read": "doc.user_id == auth.uid",
+		"create": "doc.user_id == auth.uid",
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "记录ID"
+		},
+		"user_id": {
+			"bsonType": "string",
+			"description": "用户ID"
+		},
+		"type": {
+			"bsonType": "string",
+			"enum": ["daily_login", "ad_reward", "event_reward", "stage_reward", "chat_cost", "initial_bonus", "streak_bonus"],
+			"description": "交易类型"
+		},
+		"amount": {
+			"bsonType": "int",
+			"description": "变动数量（正数为收入，负数为支出）"
+		},
+		"balance_after": {
+			"bsonType": "int",
+			"minimum": 0,
+			"description": "交易后余额"
+		},
+		"description": {
+			"bsonType": "string",
+			"description": "交易描述"
+		},
+		"related_id": {
+			"bsonType": "string",
+			"description": "关联ID（如事件ID、角色ID等）"
+		},
+		"created_at": {
+			"bsonType": "timestamp",
+			"description": "交易时间"
+		}
+	}
+}

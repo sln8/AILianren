@@ -1,0 +1,6 @@
+{
+  "name": "story-controller",
+  "version": "1.0.0",
+  "main": "index.js",
+  "description": "剧情事件控制云函数"
+}

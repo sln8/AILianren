@@ -1,0 +1,6 @@
+{
+  "name": "chat-engine",
+  "version": "1.0.0",
+  "main": "index.js",
+  "description": "AI对话引擎云函数"
+}
