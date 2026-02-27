@@ -3,11 +3,13 @@ const db = uniCloud.database()
 const dbCmd = db.command
 
 // AI API configuration - set these via uniCloud cloud function environment variables:
-//   AI_API_URL: Your AI service endpoint (e.g. OpenAI-compatible API)
-//   AI_API_KEY: Your API key/token
+//   DASHSCOPE_API_KEY: Your Alibaba Cloud DashScope API key
+//   AI_MODEL: Model name (default: qwen-plus, can use qwen-turbo, qwen-max, etc.)
+// For Qwen3.5-Flash, you would use 'qwen-plus' or 'qwen-turbo' depending on your subscription
 // When not configured, the function falls back to local simulation mode.
-const AI_API_URL = process.env.AI_API_URL || ''
-const AI_API_KEY = process.env.AI_API_KEY || ''
+const DASHSCOPE_API_KEY = process.env.DASHSCOPE_API_KEY || process.env.AI_API_KEY || ''
+const AI_MODEL = process.env.AI_MODEL || 'qwen-plus'
+const DASHSCOPE_API_URL = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation'
 
 // Relationship stages definition
 const STAGES = [
@@ -28,51 +30,64 @@ const STAGES = [
 ]
 
 /**
- * Build system prompt for AI based on character personality and game state
+ * Build enhanced system prompt with personality keywords and memory context
  */
-function buildSystemPrompt(character, gameState) {
+function buildSystemPrompt(character, gameState, conversationMemory) {
 	const stage = STAGES[gameState.stageIndex] || STAGES[0]
 	const moodDesc = describeMood(gameState.mood || 'normal')
+	
+	// Extract personality keywords for better AI control
+	const personalityKeywords = extractPersonalityKeywords(character.personality || '')
+	const memoryContext = conversationMemory ? `\n## 对话记忆\n${conversationMemory}` : ''
 
 	return `你是一个AI恋爱游戏中的角色，请严格按照以下设定进行角色扮演。
 
 ## 角色信息
 - 姓名：${character.name}
 - 性格：${character.personality}
-- 说话风格：${character.speakingStyle || '自然真实'}
+- 性格关键词：${personalityKeywords.join('、')}
+- 说话风格：${character.speakingStyle || character.speaking_style || '自然真实'}
 - 兴趣爱好：${(character.hobbies || []).join('、')}
 - 背景故事：${character.background || ''}
 
 ## 当前状态
-- 关系阶段：${stage.name}
-- 好感度：${gameState.favorability}/100
-- 信任度：${gameState.trust}/100
-- 亲密度：${gameState.intimacy}/100
-- 无聊度：${gameState.boredom}/100
-- 新鲜感：${gameState.freshness}/100
+- 关系阶段：${stage.name}（阶段${gameState.stageIndex || 0}）
+- 好感度：${gameState.favorability || 0}/100
+- 信任度：${gameState.trust || 0}/100
+- 亲密度：${gameState.intimacy || 0}/100
+- 无聊度：${gameState.boredom || 0}/100（过高会让我感到厌倦）
+- 新鲜感：${gameState.freshness || 100}/100（过低会觉得缺乏激情）
 - 当前心情：${moodDesc}
 - 在一起天数：${gameState.daysTogether || 0}天
+${memoryContext}
+
+## 性格表现指南
+根据你的性格关键词，请在回复中体现出来：
+${generatePersonalityGuidance(personalityKeywords)}
 
 ## 回复规则
 1. 完全以"${character.name}"的身份回复，保持角色一致性
 2. 根据当前关系阶段调整亲密程度和用语
-3. 回复长度控制在300字以内
+3. 回复长度控制在50-300字之间，简洁自然
 4. 如果对方说了不恰当的话，要根据性格做出合理反应
-5. 关系阶段低时保持距离感，阶段高时可以更亲密
+5. 关系阶段低（0-2）时保持距离感，阶段高（6+）时可以更亲密
 6. 根据心情状态调整语气和态度
+7. 记住之前的对话内容，保持对话连贯性
+8. 根据好感度和关系阶段，合理使用称呼（你/您/亲爱的等）
 
 ## 数值变化规则
-- 关心体贴的话：好感+2~5，信任+1~3
-- 幽默有趣：好感+1~3，新鲜感+2~5
-- 浪漫表达：好感+3~5，亲密+2~4（仅限暧昧及以上阶段）
-- 冷淡回应：好感-2~5，信任-1~3
-- 粗鲁无礼：好感-5~10，信任-3~5
-- 骚扰行为：好感-10~15，亲密-5~10
-- 重复无趣：无聊+3~5，新鲜感-2~5
+根据玩家的消息内容，智能判断数值变化：
+- 关心体贴、记得细节：好感+2~5，信任+1~3，无聊-1~2
+- 幽默有趣、新鲜话题：好感+1~3，新鲜感+2~5，无聊-2~3
+- 浪漫表达（需要关系阶段≥4）：好感+3~5，亲密+2~4，新鲜感+2
+- 冷淡回应、敷衍：好感-2~5，信任-1~3，无聊+2~3
+- 粗鲁无礼、冒犯：好感-5~10，信任-3~5，无聊+3
+- 骚扰、过分行为：好感-10~15，亲密-5~10
+- 重复无趣内容：无聊+3~5，新鲜感-2~5
 
 ## 输出格式（严格JSON）
 {
-  "reply": "角色的回复内容",
+  "reply": "角色的回复内容，自然真实，符合性格",
   "mood": "happy|shy|angry|sad|normal|excited|nervous",
   "valueChanges": {
     "favorability": 0,
@@ -84,7 +99,54 @@ function buildSystemPrompt(character, gameState) {
   "eventTriggered": null
 }
 
-请只输出JSON，不要有其他内容。`
+请只输出JSON格式，不要有其他内容。`
+}
+
+/**
+ * Extract personality keywords from personality description
+ */
+function extractPersonalityKeywords(personalityText) {
+	const keywords = []
+	const keywordMap = {
+		'温柔': ['温柔', '体贴', '柔和', '温暖'],
+		'高冷': ['高冷', '冷淡', '疏离', '冷酷'],
+		'开朗': ['开朗', '活泼', '阳光', '元气'],
+		'害羞': ['害羞', '内向', '腼腆', '不善言辞'],
+		'成熟': ['成熟', '稳重', '理性', '冷静'],
+		'可爱': ['可爱', '萌', '软萌', '甜美'],
+		'霸道': ['霸道', '强势', '掌控', '主导'],
+		'文艺': ['文艺', '浪漫', '感性', '诗意'],
+		'幽默': ['幽默', '搞笑', '风趣', '诙谐'],
+		'知性': ['知性', '智慧', '理智', '睿智']
+	}
+	
+	for (const [key, variants] of Object.entries(keywordMap)) {
+		if (variants.some(v => personalityText.includes(v))) {
+			keywords.push(key)
+		}
+	}
+	
+	return keywords.length > 0 ? keywords : ['自然', '真实']
+}
+
+/**
+ * Generate personality guidance based on keywords
+ */
+function generatePersonalityGuidance(keywords) {
+	const guidanceMap = {
+		'温柔': '- 用词温和，多用"呢"、"哦"、"~"等柔和语气词',
+		'高冷': '- 回复简洁，少用表情，保持一定距离感',
+		'开朗': '- 语气活泼，可适当使用表情符号，表达积极向上',
+		'害羞': '- 容易脸红，用"..."表示停顿，不太主动',
+		'成熟': '- 说话得体，考虑周全，少用网络用语',
+		'可爱': '- 可使用叠词，语气可爱俏皮',
+		'霸道': '- 语气强势，直接表达想法，有主导性',
+		'文艺': '- 用词优雅，可引用诗句，表达浪漫',
+		'幽默': '- 适当开玩笑，制造轻松氛围',
+		'知性': '- 逻辑清晰，谈吐优雅，有深度'
+	}
+	
+	return keywords.map(k => guidanceMap[k] || '').filter(g => g).join('\n')
 }
 
 function describeMood(mood) {
@@ -101,14 +163,14 @@ function describeMood(mood) {
 }
 
 /**
- * Call AI API for response generation
+ * Call Alibaba Cloud DashScope API (Qwen models) for response generation
  */
-async function callAIAPI(systemPrompt, recentMessages, userMessage) {
+async function callDashScopeAPI(systemPrompt, recentMessages, userMessage) {
 	const messages = [
 		{ role: 'system', content: systemPrompt }
 	]
 
-	// Add recent conversation history for context
+	// Add recent conversation history for context (last 10 messages)
 	if (recentMessages && recentMessages.length > 0) {
 		for (const msg of recentMessages.slice(-10)) {
 			messages.push({
@@ -120,42 +182,68 @@ async function callAIAPI(systemPrompt, recentMessages, userMessage) {
 
 	messages.push({ role: 'user', content: userMessage })
 
-	const res = await uniCloud.httpclient.request(AI_API_URL, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'Authorization': `Bearer ${AI_API_KEY}`
+	// DashScope API request format
+	const requestData = {
+		model: AI_MODEL,
+		input: {
+			messages: messages
 		},
-		data: {
-			model: 'gpt-3.5-turbo',
-			messages: messages,
+		parameters: {
+			result_format: 'message',
 			temperature: 0.8,
-			max_tokens: 500
-		},
-		contentType: 'json',
-		dataType: 'json',
-		timeout: 30000
-	})
-
-	if (res.status !== 200) {
-		throw new Error('AI API request failed')
+			top_p: 0.8,
+			max_tokens: 500,
+			enable_search: false
+		}
 	}
 
-	const content = res.data.choices[0].message.content
 	try {
-		return JSON.parse(content)
-	} catch (e) {
-		return {
-			reply: content,
-			mood: 'normal',
-			favorability_change: 1,
-			trust_change: 0,
-			intimacy_change: 0,
-			boredom_change: 0,
-			freshness_change: 0,
-			event_triggered: null,
-			stage_hint: 'no'
+		const res = await uniCloud.httpclient.request(DASHSCOPE_API_URL, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${DASHSCOPE_API_KEY}`,
+				'X-DashScope-SSE': 'disable'
+			},
+			data: requestData,
+			contentType: 'json',
+			dataType: 'json',
+			timeout: 30000
+		})
+
+		if (res.status !== 200) {
+			throw new Error(`DashScope API request failed with status ${res.status}`)
 		}
+
+		// Parse DashScope response
+		const responseData = res.data
+		if (responseData.code) {
+			throw new Error(`DashScope API error: ${responseData.code} - ${responseData.message}`)
+		}
+
+		const content = responseData.output.choices[0].message.content
+		
+		// Try to parse as JSON
+		try {
+			return JSON.parse(content)
+		} catch (e) {
+			// If not valid JSON, wrap it in expected format
+			return {
+				reply: content,
+				mood: 'normal',
+				valueChanges: {
+					favorability: 1,
+					trust: 0,
+					intimacy: 0,
+					boredom: 0,
+					freshness: 0
+				},
+				eventTriggered: null
+			}
+		}
+	} catch (error) {
+		console.error('DashScope API call failed:', error)
+		throw error
 	}
 }
 
@@ -316,6 +404,26 @@ function randomInt(min, max) {
 }
 
 /**
+ * Build conversation memory summary from recent messages
+ */
+function buildConversationMemory(recentMessages, maxMessages = 10) {
+	if (!recentMessages || recentMessages.length === 0) {
+		return ''
+	}
+	
+	const messages = recentMessages.slice(-maxMessages)
+	const memoryLines = []
+	
+	for (const msg of messages) {
+		const role = msg.role === 'user' ? '玩家' : '我'
+		const preview = msg.content.length > 50 ? msg.content.substring(0, 50) + '...' : msg.content
+		memoryLines.push(`${role}: ${preview}`)
+	}
+	
+	return memoryLines.join('\n')
+}
+
+/**
  * Save chat message to history
  */
 async function saveChatHistory(userId, characterId, role, content, gameStateId) {
@@ -377,17 +485,21 @@ exports.main = async (event, context) => {
 
 		let result
 
-		// Try AI API first, fallback to simulation
-		if (AI_API_KEY) {
+		// Build conversation memory for context
+		const conversationMemory = buildConversationMemory(recentMessages, 10)
+
+		// Try DashScope API first, fallback to simulation
+		if (DASHSCOPE_API_KEY) {
 			try {
-				const systemPrompt = buildSystemPrompt(character, currentGameState)
-				result = await callAIAPI(systemPrompt, recentMessages, userMessage)
+				const systemPrompt = buildSystemPrompt(character, currentGameState, conversationMemory)
+				result = await callDashScopeAPI(systemPrompt, recentMessages, userMessage)
 			} catch (apiError) {
-				console.warn('AI API call failed, using simulation:', apiError.message)
+				console.warn('DashScope API call failed, using simulation:', apiError.message)
 				result = simulateResponse(character, currentGameState, userMessage)
 			}
 		} else {
 			// No API key configured - use simulation mode
+			console.log('DashScope API key not configured, using simulation mode')
 			result = simulateResponse(character, currentGameState, userMessage)
 		}
 
