@@ -138,11 +138,25 @@ async function callAIAPI(systemPrompt, recentMessages, userMessage) {
 	})
 
 	if (res.status !== 200) {
-		throw new Error(`AI API error: ${res.status}`)
+		throw new Error('AI API request failed')
 	}
 
 	const content = res.data.choices[0].message.content
-	return JSON.parse(content)
+	try {
+		return JSON.parse(content)
+	} catch (e) {
+		return {
+			reply: content,
+			mood: 'normal',
+			favorability_change: 1,
+			trust_change: 0,
+			intimacy_change: 0,
+			boredom_change: 0,
+			freshness_change: 0,
+			event_triggered: null,
+			stage_hint: 'no'
+		}
+	}
 }
 
 /**

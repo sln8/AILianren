@@ -79,8 +79,11 @@ async function login(params, context) {
  */
 async function updateGender(params, context) {
 	const { userId, gender } = params
+	// Use context uid for auth when available
+	const authUid = context.CLIENTINFO && context.CLIENTINFO.uid
+	const targetId = authUid || userId
 
-	if (!userId || !gender) {
+	if (!targetId || !gender) {
 		return { code: -1, msg: '缺少必要参数' }
 	}
 
@@ -89,7 +92,7 @@ async function updateGender(params, context) {
 	}
 
 	try {
-		await db.collection('users').doc(userId).update({
+		await db.collection('users').doc(targetId).update({
 			gender: gender
 		})
 		return { code: 0, msg: '性别更新成功' }
@@ -104,13 +107,15 @@ async function updateGender(params, context) {
  */
 async function getProfile(params, context) {
 	const { userId } = params
+	const authUid = context.CLIENTINFO && context.CLIENTINFO.uid
+	const targetId = authUid || userId
 
-	if (!userId) {
+	if (!targetId) {
 		return { code: -1, msg: '缺少用户ID' }
 	}
 
 	try {
-		const res = await db.collection('users').doc(userId).get()
+		const res = await db.collection('users').doc(targetId).get()
 		if (res.data && res.data.length > 0) {
 			return { code: 0, data: res.data[0] }
 		}
@@ -126,8 +131,10 @@ async function getProfile(params, context) {
  */
 async function updateSettings(params, context) {
 	const { userId, settings } = params
+	const authUid = context.CLIENTINFO && context.CLIENTINFO.uid
+	const targetId = authUid || userId
 
-	if (!userId || !settings) {
+	if (!targetId || !settings) {
 		return { code: -1, msg: '缺少必要参数' }
 	}
 
@@ -147,7 +154,7 @@ async function updateSettings(params, context) {
 			return { code: -1, msg: '没有有效的设置项' }
 		}
 
-		await db.collection('users').doc(userId).update(updateData)
+		await db.collection('users').doc(targetId).update(updateData)
 		return { code: 0, msg: '设置更新成功' }
 	} catch (err) {
 		console.error('updateSettings error:', err)
