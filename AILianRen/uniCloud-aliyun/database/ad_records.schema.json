@@ -1,0 +1,41 @@
+{
+	"bsonType": "object",
+	"required": ["user_id", "ad_type", "reward_words", "date", "created_at"],
+	"permission": {
+		"read": "doc.user_id == auth.uid",
+		"create": "doc.user_id == auth.uid",
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "记录ID"
+		},
+		"user_id": {
+			"bsonType": "string",
+			"description": "用户ID"
+		},
+		"ad_type": {
+			"bsonType": "string",
+			"enum": ["rewarded_video", "interstitial", "banner"],
+			"description": "广告类型"
+		},
+		"platform": {
+			"bsonType": "string",
+			"description": "观看平台"
+		},
+		"reward_words": {
+			"bsonType": "int",
+			"minimum": 0,
+			"description": "奖励字数"
+		},
+		"date": {
+			"bsonType": "string",
+			"description": "观看日期（YYYY-MM-DD）"
+		},
+		"created_at": {
+			"bsonType": "timestamp",
+			"description": "记录时间"
+		}
+	}
+}

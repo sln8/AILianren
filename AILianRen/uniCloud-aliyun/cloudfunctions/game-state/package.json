@@ -1,0 +1,6 @@
+{
+  "name": "game-state",
+  "version": "1.0.0",
+  "main": "index.js",
+  "description": "游戏状态管理云函数"
+}

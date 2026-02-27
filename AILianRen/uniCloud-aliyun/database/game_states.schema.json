@@ -1,0 +1,104 @@
+{
+	"bsonType": "object",
+	"required": ["user_id", "character_id", "stage_index", "favorability"],
+	"permission": {
+		"read": "doc.user_id == auth.uid",
+		"create": "doc.user_id == auth.uid",
+		"update": "doc.user_id == auth.uid",
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "存档ID"
+		},
+		"user_id": {
+			"bsonType": "string",
+			"description": "用户ID"
+		},
+		"character_id": {
+			"bsonType": "string",
+			"description": "角色ID"
+		},
+		"stage_index": {
+			"bsonType": "int",
+			"minimum": 0,
+			"maximum": 13,
+			"description": "当前关系阶段索引（0-13）"
+		},
+		"favorability": {
+			"bsonType": "double",
+			"minimum": 0,
+			"maximum": 100,
+			"description": "好感度（0-100）"
+		},
+		"trust": {
+			"bsonType": "double",
+			"minimum": 0,
+			"maximum": 100,
+			"description": "信任度（0-100）"
+		},
+		"intimacy": {
+			"bsonType": "double",
+			"minimum": 0,
+			"maximum": 100,
+			"description": "亲密度（0-100）"
+		},
+		"boredom": {
+			"bsonType": "double",
+			"minimum": 0,
+			"maximum": 100,
+			"description": "无聊度（0-100）"
+		},
+		"freshness": {
+			"bsonType": "double",
+			"minimum": 0,
+			"maximum": 100,
+			"description": "新鲜感（0-100）"
+		},
+		"mood": {
+			"bsonType": "string",
+			"enum": ["happy", "shy", "angry", "sad", "normal", "excited", "nervous"],
+			"description": "当前心情"
+		},
+		"days_together": {
+			"bsonType": "int",
+			"minimum": 0,
+			"description": "在一起天数"
+		},
+		"total_interactions": {
+			"bsonType": "int",
+			"minimum": 0,
+			"description": "总互动次数"
+		},
+		"completed_events": {
+			"bsonType": "array",
+			"description": "已完成事件ID列表",
+			"items": {
+				"bsonType": "string"
+			}
+		},
+		"milestones": {
+			"bsonType": "array",
+			"description": "已达成里程碑列表",
+			"items": {
+				"bsonType": "string"
+			}
+		},
+		"is_archived": {
+			"bsonType": "bool",
+			"description": "是否已归档"
+		},
+		"archived_at": {
+			"bsonType": "timestamp",
+			"description": "归档时间"
+		},
+		"created_at": {
+			"bsonType": "timestamp",
+			"description": "创建时间"
+		},
+		"updated_at": {
+			"bsonType": "timestamp",
+			"description": "更新时间"
+		}
+	}
+}

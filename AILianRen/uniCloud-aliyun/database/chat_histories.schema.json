@@ -1,0 +1,44 @@
+{
+	"bsonType": "object",
+	"required": ["user_id", "character_id", "role", "content", "created_at"],
+	"permission": {
+		"read": "doc.user_id == auth.uid",
+		"create": "doc.user_id == auth.uid",
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "记录ID"
+		},
+		"user_id": {
+			"bsonType": "string",
+			"description": "用户ID"
+		},
+		"character_id": {
+			"bsonType": "string",
+			"description": "角色ID"
+		},
+		"game_state_id": {
+			"bsonType": "string",
+			"description": "关联的游戏存档ID"
+		},
+		"role": {
+			"bsonType": "string",
+			"enum": ["user", "assistant", "system"],
+			"description": "消息角色（user=玩家, assistant=AI角色, system=系统）"
+		},
+		"content": {
+			"bsonType": "string",
+			"description": "消息内容"
+		},
+		"mood": {
+			"bsonType": "string",
+			"description": "发送时角色心情"
+		},
+		"created_at": {
+			"bsonType": "timestamp",
+			"description": "发送时间"
+		}
+	}
+}

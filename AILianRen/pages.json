@@ -1,17 +1,72 @@
 {
-	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+	"pages": [
 		{
-			"path": "pages/index/index",
+			"path": "pages/splash/index",
 			"style": {
-				"navigationBarTitleText": "uni-app"
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "启动页"
+			}
+		},
+		{
+			"path": "pages/gender-select/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "性别选择"
+			}
+		},
+		{
+			"path": "pages/character-select/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "选择恋人"
+			}
+		},
+		{
+			"path": "pages/game/chat",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "核心聊天",
+				"app-plus": {
+					"softinputMode": "adjustResize"
+				}
+			}
+		},
+		{
+			"path": "pages/game/relationship",
+			"style": {
+				"navigationBarTitleText": "关系面板"
+			}
+		},
+		{
+			"path": "pages/game/memories",
+			"style": {
+				"navigationBarTitleText": "回忆录"
+			}
+		},
+		{
+			"path": "pages/shop/words",
+			"style": {
+				"navigationBarTitleText": "字数商店"
+			}
+		},
+		{
+			"path": "pages/settings/index",
+			"style": {
+				"navigationBarTitleText": "设置"
+			}
+		},
+		{
+			"path": "pages/collection/index",
+			"style": {
+				"navigationBarTitleText": "角色图鉴"
 			}
 		}
 	],
 	"globalStyle": {
-		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "uni-app",
-		"navigationBarBackgroundColor": "#F8F8F8",
-		"backgroundColor": "#F8F8F8"
+		"navigationBarTextStyle": "white",
+		"navigationBarTitleText": "AI恋人",
+		"navigationBarBackgroundColor": "#1a1a2e",
+		"backgroundColor": "#1a1a2e"
 	},
 	"uniIdRouter": {}
 }
