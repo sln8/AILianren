@@ -12,9 +12,8 @@ export function checkBalance(needed) {
 }
 
 export function consumeWords(text, isAI = false) {
-  const charCount = text.length
-  // AI responses cost 1 word per char; user messages cost 1 word per char
-  const cost = charCount
+  // Messages cost 1 word per character
+  const cost = text.length
   return userStore.spendWords(cost)
 }
 
