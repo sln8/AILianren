@@ -89,6 +89,10 @@ import { getCharacterById } from '@/utils/characters.js'
 import { checkForEvents } from '@/utils/event-checker.js'
 import { consumeWords, checkBalance, getWordsFromAd } from '@/utils/word-manager.js'
 import { showRewardAd, canWatchAd } from '@/utils/ad-manager.js'
+import WordBalanceTag from '@/components/WordBalanceTag.vue'
+import ChatBubble from '@/components/ChatBubble.vue'
+import AdRewardButton from '@/components/AdRewardButton.vue'
+import EventPopup from '@/components/EventPopup.vue'
 
 // Reply pools keyed by stage category
 const STAGE_REPLIES = {
@@ -247,6 +251,12 @@ function getSimulatedReply(character, gameState, userMessage) {
 
 export default {
 	name: 'GameChat',
+	components: {
+		WordBalanceTag,
+		ChatBubble,
+		AdRewardButton,
+		EventPopup
+	},
 	data() {
 		return {
 			inputText: '',
