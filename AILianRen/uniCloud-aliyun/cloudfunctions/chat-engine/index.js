@@ -2,9 +2,12 @@
 const db = uniCloud.database()
 const dbCmd = db.command
 
-// AI API configuration (placeholder - configure in uniCloud settings)
-const AI_API_URL = 'https://api.example.com/v1/chat/completions'
-const AI_API_KEY = '' // Set via uniCloud environment or config
+// AI API configuration - set these via uniCloud cloud function environment variables:
+//   AI_API_URL: Your AI service endpoint (e.g. OpenAI-compatible API)
+//   AI_API_KEY: Your API key/token
+// When not configured, the function falls back to local simulation mode.
+const AI_API_URL = process.env.AI_API_URL || ''
+const AI_API_KEY = process.env.AI_API_KEY || ''
 
 // Relationship stages definition
 const STAGES = [

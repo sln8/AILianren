@@ -59,12 +59,16 @@ async function claimReward(params) {
 			total_words_earned: dbCmd.inc(AD_REWARD_WORDS)
 		})
 
+		// Read updated balance for accurate transaction record
+		const userRes = await db.collection('users').doc(userId).field({ word_balance: true }).get()
+		const newBalance = (userRes.data && userRes.data.length > 0) ? userRes.data[0].word_balance : 0
+
 		// Record word transaction
 		await db.collection('word_transactions').add({
 			user_id: userId,
 			type: 'ad_reward',
 			amount: AD_REWARD_WORDS,
-			balance_after: 0, // Will be updated by client
+			balance_after: newBalance,
 			description: '观看广告奖励',
 			created_at: Date.now()
 		})

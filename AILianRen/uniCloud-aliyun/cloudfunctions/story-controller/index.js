@@ -124,12 +124,16 @@ async function completeEvent(params) {
 				total_words_earned: dbCmd.inc(evt.reward)
 			})
 
+			// Read updated balance for accurate transaction record
+			const userRes = await db.collection('users').doc(userId).field({ word_balance: true }).get()
+			const newBalance = (userRes.data && userRes.data.length > 0) ? userRes.data[0].word_balance : 0
+
 			// Record transaction
 			await db.collection('word_transactions').add({
 				user_id: userId,
 				type: 'event_reward',
 				amount: evt.reward,
-				balance_after: 0,
+				balance_after: newBalance,
 				description: `完成事件「${evt.name}」奖励`,
 				created_at: Date.now()
 			})

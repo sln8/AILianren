@@ -72,6 +72,10 @@ async function checkIn(params) {
 			total_words_earned: dbCmd.inc(totalReward)
 		})
 
+		// Read updated balance for accurate transaction record
+		const updatedUser = await db.collection('users').doc(userId).field({ word_balance: true }).get()
+		const newBalance = (updatedUser.data && updatedUser.data.length > 0) ? updatedUser.data[0].word_balance : 0
+
 		// Record transaction
 		let description = `每日签到奖励（连续${streak}天）`
 		if (sevenDayBonus) {
@@ -82,7 +86,7 @@ async function checkIn(params) {
 			user_id: userId,
 			type: 'daily_login',
 			amount: totalReward,
-			balance_after: 0,
+			balance_after: newBalance,
 			description: description,
 			created_at: Date.now()
 		})
