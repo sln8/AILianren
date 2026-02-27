@@ -83,9 +83,13 @@
 
 <script>
 import { userStore } from '@/store/user.js'
+import AdRewardButton from '@/components/AdRewardButton.vue'
 
 export default {
 	name: 'WordsShopPage',
+	components: {
+		AdRewardButton
+	},
 	data() {
 		return {
 			userState: userStore.state,
