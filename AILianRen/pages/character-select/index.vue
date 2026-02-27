@@ -21,9 +21,13 @@
 import { getCharactersByGender } from '@/utils/characters.js'
 import { userStore } from '@/store/user.js'
 import { gameStore } from '@/store/game.js'
+import CharacterCard from '@/components/CharacterCard.vue'
 
 export default {
 	name: 'CharacterSelectPage',
+	components: {
+		CharacterCard
+	},
 	data() {
 		return {
 			filteredCharacters: []
