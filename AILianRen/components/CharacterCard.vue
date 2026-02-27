@@ -5,7 +5,7 @@
 			<text class="character-name">{{ character.name }}</text>
 			<text class="personality-tag">{{ character.personalityTag }}</text>
 			<view class="difficulty-stars">
-				<text v-for="i in 5" :key="i" class="star">{{ i <= character.difficulty ? '★' : '☆' }}</text>
+				<text v-for="i in 5" :key="i" class="star">{{ i <= difficultyLevel ? '★' : '☆' }}</text>
 			</view>
 		</view>
 	</view>
@@ -21,6 +21,14 @@ export default {
 		}
 	},
 	emits: ['select'],
+	computed: {
+		difficultyLevel() {
+			const map = { '简单': 2, '中等': 3, '困难': 5 };
+			const d = this.character.difficulty;
+			if (typeof d === 'number') return d;
+			return map[d] || 3;
+		}
+	},
 	methods: {
 		handleSelect() {
 			this.$emit('select', this.character.id);

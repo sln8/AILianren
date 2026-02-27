@@ -7,7 +7,7 @@
 			<view :class="['bubble', message.role === 'user' ? 'bubble-user' : 'bubble-assistant']">
 				<text class="bubble-text">{{ message.content }}</text>
 			</view>
-			<text class="timestamp">{{ message.timestamp }}</text>
+			<text class="timestamp">{{ formattedTime }}</text>
 		</view>
 	</view>
 </template>
@@ -23,6 +23,17 @@ export default {
 		characterAvatar: {
 			type: String,
 			default: ''
+		}
+	},
+	computed: {
+		formattedTime() {
+			const ts = this.message.timestamp;
+			if (!ts) return '';
+			const d = typeof ts === 'number' ? new Date(ts) : new Date(ts);
+			if (isNaN(d.getTime())) return String(ts);
+			const hh = String(d.getHours()).padStart(2, '0');
+			const mm = String(d.getMinutes()).padStart(2, '0');
+			return `${hh}:${mm}`;
 		}
 	}
 }
