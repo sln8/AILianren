@@ -206,7 +206,7 @@ const SPEECH_MODIFIERS = {
 
 // Contextual keyword matching for more relevant replies
 function getContextualBoost(userMessage) {
-	const boosts = { favorability_change: 0, trust_change: 0, intimacy_change: 0 }
+	const boosts = { favorability_change: 0, trust_change: 0, intimacy_change: 0, boredom_change: 0 }
 	const msg = userMessage.toLowerCase()
 	if (/关心|担心|在意|心疼/.test(msg)) { boosts.favorability_change += 1; boosts.trust_change += 1 }
 	if (/喜欢|爱|想你|想念/.test(msg)) { boosts.favorability_change += 1; boosts.intimacy_change += 1 }
@@ -237,6 +237,10 @@ function getSimulatedReply(character, gameState, userMessage) {
 
 	// Clamp changes
 	chosen.favorability_change = Math.max(0, Math.min(5, chosen.favorability_change))
+	chosen.trust_change = Math.max(-3, Math.min(5, chosen.trust_change))
+	chosen.intimacy_change = Math.max(-3, Math.min(5, chosen.intimacy_change))
+	chosen.boredom_change = Math.max(-3, Math.min(5, chosen.boredom_change))
+	chosen.freshness_change = Math.max(-3, Math.min(3, chosen.freshness_change))
 
 	return chosen
 }
