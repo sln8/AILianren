@@ -1,0 +1,6 @@
+{
+  "name": "user-login",
+  "version": "1.0.0",
+  "main": "index.js",
+  "description": "AI恋人游戏 - 用户登录注册云函数"
+}

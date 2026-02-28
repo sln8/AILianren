@@ -1,0 +1,82 @@
+{
+  "bsonType": "object",
+  "required": ["openid"],
+  "permission": {
+    "read": true,
+    "create": true,
+    "update": "doc._id == auth.uid",
+    "delete": false
+  },
+  "properties": {
+    "_id": { "description": "用户ID" },
+    "openid": {
+      "bsonType": "string",
+      "description": "微信/抖音openid",
+      "trim": "both"
+    },
+    "platform": {
+      "bsonType": "string",
+      "description": "平台标识 mp-weixin / mp-toutiao"
+    },
+    "nickname": {
+      "bsonType": "string",
+      "description": "玩家昵称",
+      "trim": "both"
+    },
+    "gender": {
+      "bsonType": "string",
+      "description": "性别 male / female",
+      "enum": ["male", "female", ""]
+    },
+    "words_balance": {
+      "bsonType": "int",
+      "description": "当前字数余额",
+      "minimum": 0
+    },
+    "words_total_used": {
+      "bsonType": "int",
+      "description": "累计使用字数",
+      "minimum": 0
+    },
+    "ads_watched_today": {
+      "bsonType": "int",
+      "description": "今日已看广告次数",
+      "minimum": 0
+    },
+    "ads_watched_total": {
+      "bsonType": "int",
+      "description": "累计观看广告次数",
+      "minimum": 0
+    },
+    "share_count_today": {
+      "bsonType": "int",
+      "description": "今日分享次数",
+      "minimum": 0
+    },
+    "current_lover_id": {
+      "bsonType": "string",
+      "description": "当前恋人角色ID"
+    },
+    "total_lovers_played": {
+      "bsonType": "int",
+      "description": "历史恋人总数",
+      "minimum": 0
+    },
+    "created_at": {
+      "bsonType": "timestamp",
+      "description": "注册时间"
+    },
+    "last_login_at": {
+      "bsonType": "timestamp",
+      "description": "最后登录时间"
+    },
+    "daily_words_claimed": {
+      "bsonType": "bool",
+      "description": "今日免费字数是否已领取"
+    },
+    "settings": {
+      "bsonType": "object",
+      "description": "用户设置"
+    }
+  }
+}

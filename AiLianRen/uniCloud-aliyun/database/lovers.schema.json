@@ -1,0 +1,105 @@
+{
+  "bsonType": "object",
+  "required": ["user_id", "character_id"],
+  "permission": {
+    "read": true,
+    "create": true,
+    "update": true,
+    "delete": false
+  },
+  "properties": {
+    "_id": { "description": "档案ID" },
+    "user_id": {
+      "bsonType": "string",
+      "description": "所属用户ID"
+    },
+    "character_id": {
+      "bsonType": "string",
+      "description": "角色ID（如F01, M03）"
+    },
+    "character_name": {
+      "bsonType": "string",
+      "description": "角色名字"
+    },
+    "status": {
+      "bsonType": "string",
+      "description": "状态：active/archived/dead",
+      "enum": ["active", "archived", "dead"]
+    },
+    "stage": {
+      "bsonType": "int",
+      "description": "当前阶段ID（1-20）",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "stage_name": {
+      "bsonType": "string",
+      "description": "当前阶段名称"
+    },
+    "favor_score": {
+      "bsonType": "int",
+      "description": "好感度（0-500）",
+      "minimum": 0,
+      "maximum": 500
+    },
+    "intimacy_score": {
+      "bsonType": "int",
+      "description": "亲密度（0-100）",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "trust_score": {
+      "bsonType": "int",
+      "description": "信任值（0-100）",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "romance_score": {
+      "bsonType": "int",
+      "description": "浪漫值（0-100）",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "rapport_score": {
+      "bsonType": "int",
+      "description": "默契值（0-100）",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "total_rounds": {
+      "bsonType": "int",
+      "description": "总对话轮次",
+      "minimum": 0
+    },
+    "total_words_consumed": {
+      "bsonType": "int",
+      "description": "累计消耗字数",
+      "minimum": 0
+    },
+    "days_together": {
+      "bsonType": "int",
+      "description": "在一起天数",
+      "minimum": 0
+    },
+    "events_completed": {
+      "bsonType": "array",
+      "description": "已完成事件ID列表"
+    },
+    "relationship_summary": {
+      "bsonType": "string",
+      "description": "关系摘要"
+    },
+    "key_memories": {
+      "bsonType": "array",
+      "description": "关键回忆列表"
+    },
+    "created_at": {
+      "bsonType": "timestamp",
+      "description": "创建时间"
+    },
+    "last_chat_at": {
+      "bsonType": "timestamp",
+      "description": "最后聊天时间"
+    }
+  }
+}

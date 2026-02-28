@@ -1,0 +1,30 @@
+{
+  "bsonType": "object",
+  "required": ["user_id", "lover_id"],
+  "permission": {
+    "read": true,
+    "create": true,
+    "update": false,
+    "delete": false
+  },
+  "properties": {
+    "_id": { "description": "消息记录ID" },
+    "user_id": {
+      "bsonType": "string",
+      "description": "用户ID"
+    },
+    "lover_id": {
+      "bsonType": "string",
+      "description": "恋人档案ID"
+    },
+    "round": {
+      "bsonType": "int",
+      "description": "对话轮次",
+      "minimum": 1
+    },
+    "messages": {
+      "bsonType": "array",
+      "description": "本轮消息列表，包含用户消息和AI回复"
+    }
+  }
+}
