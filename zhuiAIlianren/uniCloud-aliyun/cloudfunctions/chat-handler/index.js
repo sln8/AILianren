@@ -109,12 +109,15 @@ exports.main = async (event, context) => {
 
 async function callLLM(messages) {
   // Call DeepSeek API or other LLM
-  // Replace YOUR_API_KEY with actual API key
+  const apiKey = process.env.DEEPSEEK_API_KEY;
+  if (!apiKey) {
+    throw new Error('DEEPSEEK_API_KEY environment variable is not set');
+  }
   const res = await uniCloud.httpclient.request('https://api.deepseek.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer YOUR_API_KEY'
+      'Authorization': `Bearer ${apiKey}`
     },
     data: {
       model: 'deepseek-chat',
