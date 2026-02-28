@@ -4,6 +4,6 @@
   "description": "《这些年我们追过的AI恋人》云函数",
   "dependencies": {
     "@open-dy/node-server-sdk": "^1.0.0",
-    "axios": "^1.6.1"
+    "axios": "^1.13.5"
   }
 }
