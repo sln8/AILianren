@@ -1,11 +1,26 @@
 // Chat Engine Test Script
 // 用于测试 chat-engine 云函数的功能
 
+// Sample character data (from utils/characters.js)
+const testCharacter = {
+	id: 'F01',
+	name: '苏晚晴',
+	gender: 'female',
+	personalityTag: '温柔学姐',
+	personalityDetail: '性格温柔体贴，说话轻声细语，总是面带微笑。对人真诚热情，喜欢照顾身边的人。内心细腻敏感，对感情认真专一。偶尔会有些小固执，但从不与人起冲突。',
+	speechStyle: '说话温柔婉约，喜欢在句尾加"呢"、"呀"等语气词。偶尔引用诗词名句，措辞优雅有文采。关心人时很自然，不会太过刻意。例如："今天的风好温柔呢，让我想起一句诗……"',
+	hobbies: ['阅读文学作品', '写散文随笔', '品茶', '逛书店', '看话剧'],
+	backstory: '中文系大三学生，文学社社长。从小在书香门第长大，父母都是大学教授。性格温婉知性，是学弟学妹们心中的完美学姐。暗地里是个重度小说迷，房间里堆满了各种书。',
+	difficulty: '简单',
+	image: '/static/character/nv_01.png'
+}
+
 const testCases = [
 	{
-		name: '初次见面测试',
+		name: '初次见面测试（带角色数据）',
 		input: {
 			characterId: 'F01',
+			character: testCharacter,
 			userMessage: '你好呀！',
 			gameState: {
 				stageIndex: 0,
@@ -29,6 +44,7 @@ const testCases = [
 		name: '积极互动测试',
 		input: {
 			characterId: 'F01',
+			character: testCharacter,
 			userMessage: '你今天看起来真漂亮！',
 			gameState: {
 				stageIndex: 2,
@@ -54,6 +70,7 @@ const testCases = [
 		name: '浪漫表达测试（暧昧阶段）',
 		input: {
 			characterId: 'F01',
+			character: testCharacter,
 			userMessage: '和你在一起的时候，我总是很开心',
 			gameState: {
 				stageIndex: 4,
@@ -80,6 +97,7 @@ const testCases = [
 		name: '消极互动测试',
 		input: {
 			characterId: 'F01',
+			character: testCharacter,
 			userMessage: '你好烦啊',
 			gameState: {
 				stageIndex: 2,
