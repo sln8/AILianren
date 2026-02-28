@@ -1,0 +1,6 @@
+{
+  "name": "chat-handler",
+  "version": "1.0.0",
+  "main": "index.js",
+  "description": "AI恋人对话处理云函数"
+}
