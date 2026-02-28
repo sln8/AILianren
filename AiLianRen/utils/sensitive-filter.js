@@ -48,18 +48,18 @@ const SENSITIVE_WORDS = {
   ]
 }
 
-// 扁平化敏感词列表（用于快速匹配）
-let _flatWordList = null
+// 扁平化敏感词列表缓存（用于快速匹配）
+let flatWordListCache = null
 
 /**
  * 获取扁平化的敏感词列表（懒加载+缓存）
  * @returns {string[]} 敏感词数组
  */
 function getFlatWordList() {
-  if (!_flatWordList) {
-    _flatWordList = Object.values(SENSITIVE_WORDS).flat()
+  if (!flatWordListCache) {
+    flatWordListCache = Object.values(SENSITIVE_WORDS).flat()
   }
-  return _flatWordList
+  return flatWordListCache
 }
 
 /**
