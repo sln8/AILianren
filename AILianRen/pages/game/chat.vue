@@ -303,50 +303,64 @@ export default {
 			}, 800 + Math.random() * 1200)
 		},
 
-		generateAIReply(userMessage) {
-			const result = getSimulatedReply(this.character, gameStore.state, userMessage)
-
-			// Consume words for AI reply
-			consumeWords(result.reply, true)
-			this.wordBalance = userStore.state.wordBalance
-
-			chatStore.addMessage('assistant', result.reply, {
-				mood: result.mood,
-				valueChanges: {
-					favorability_change: result.favorability_change,
-					trust_change: result.trust_change,
-					intimacy_change: result.intimacy_change,
-					boredom_change: result.boredom_change,
-					freshness_change: result.freshness_change
-				}
-			})
-			this.messages = [...chatStore.state.messages]
-
-			// Update game values
-			gameStore.updateValues({
-				favorability_change: result.favorability_change,
-				trust_change: result.trust_change,
-				intimacy_change: result.intimacy_change,
-				boredom_change: result.boredom_change,
-				freshness_change: result.freshness_change,
-				mood: result.mood
-			})
-
-			// Check for events
-			const triggered = checkForEvents(gameStore.state)
-			if (triggered.length > 0) {
-				const evt = triggered[0]
-				gameStore.addEvent(evt.id)
-				this.currentEvent = evt
-				this.showEvent = true
-			}
-
-			// Save state
-			chatStore.saveMessages(this.character.id)
-			gameStore.saveToStorage()
-
-			this.isLoading = false
-			this.scrollToBottom()
+		async generateAIReply(userMessage) {
+		  try {
+		    const res = await uniCloud.callFunction({
+		      name: 'chat-engine', // 必须与您的云函数名称一致
+		      data: {
+		        characterId: this.character.id,
+		        userMessage: userMessage,
+		        gameState: gameStore.state,          // 当前游戏状态
+		        recentMessages: chatStore.state.messages // 最近对话（用于上下文）
+		      }
+		    })
+		
+		    if (res.result.code === 0) {
+		      const result = res.result.data
+		
+		      // 消耗字数（AI 回复的字数也要扣除）
+		      consumeWords(result.reply, true)
+		      this.wordBalance = userStore.state.wordBalance
+		
+		      // 添加 AI 消息到聊天记录
+		      chatStore.addMessage('assistant', result.reply, {
+		        mood: result.mood,
+		        valueChanges: result.valueChanges // 注意云函数返回的是 valueChanges 对象
+		      })
+		      this.messages = [...chatStore.state.messages]
+		
+		      // 更新游戏数值
+		      gameStore.updateValues({
+		        favorability_change: result.valueChanges.favorability,
+		        trust_change: result.valueChanges.trust,
+		        intimacy_change: result.valueChanges.intimacy,
+		        boredom_change: result.valueChanges.boredom,
+		        freshness_change: result.valueChanges.freshness,
+		        mood: result.mood
+		      })
+		
+		      // 检查事件触发
+		      const triggered = checkForEvents(gameStore.state)
+		      if (triggered.length > 0) {
+		        const evt = triggered[0]
+		        gameStore.addEvent(evt.id)
+		        this.currentEvent = evt
+		        this.showEvent = true
+		      }
+		
+		      // 保存状态
+		      chatStore.saveMessages(this.character.id)
+		      gameStore.saveToStorage()
+		    } else {
+		      uni.showToast({ title: res.result.msg || '对话生成失败', icon: 'none' })
+		    }
+		  } catch (err) {
+		    console.error('云函数调用失败', err)
+		    uni.showToast({ title: '网络异常，请稍后重试', icon: 'none' })
+		  } finally {
+		    this.isLoading = false
+		    this.scrollToBottom()
+		  }
 		},
 
 		watchAd() {

@@ -1,13 +1,13 @@
 'use strict';
 const db = uniCloud.database()
 const dbCmd = db.command
-
+console.log('环境变量 DASHSCOPE_API_KEY:', process.env.DASHSCOPE_API_KEY ? '已设置' : '未设置')
 // AI API configuration - set these via uniCloud cloud function environment variables:
 //   DASHSCOPE_API_KEY: Your Alibaba Cloud DashScope API key
 //   AI_MODEL: Model name (default: qwen-plus, can use qwen-turbo, qwen-max, etc.)
 // For Qwen3.5-Flash, you would use 'qwen-plus' or 'qwen-turbo' depending on your subscription
 // When not configured, the function falls back to local simulation mode.
-const DASHSCOPE_API_KEY = process.env.DASHSCOPE_API_KEY || process.env.AI_API_KEY || ''
+const DASHSCOPE_API_KEY =  process.env.DASHSCOPE_API_KEY || process.env.AI_API_KEY || ''
 const AI_MODEL = process.env.AI_MODEL || 'qwen-plus'
 const DASHSCOPE_API_URL = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation'
 

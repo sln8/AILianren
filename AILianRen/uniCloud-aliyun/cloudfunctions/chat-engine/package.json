@@ -2,5 +2,11 @@
   "name": "chat-engine",
   "version": "1.0.0",
   "main": "index.js",
-  "description": "AI对话引擎云函数"
+  "description": "AI对话引擎云函数",
+  "cloudfunction-config": {
+      "env": {
+        "DASHSCOPE_API_KEY": "sk-98ddaeb49b034654bd1fc0bd343e93df"
+      }
+     
+    }
 }
