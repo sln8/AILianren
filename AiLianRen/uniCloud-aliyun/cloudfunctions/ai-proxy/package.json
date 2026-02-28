@@ -1,0 +1,6 @@
+{
+  "name": "ai-proxy",
+  "version": "1.0.0",
+  "main": "index.js",
+  "description": "AI恋人游戏 - AI API代理云函数"
+}
