@@ -1,6 +1,0 @@
-{
-  "name": "ad-reward-handler",
-  "version": "1.0.0",
-  "main": "index.js",
-  "description": "广告奖励处理云函数"
-}
