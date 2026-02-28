@@ -1,0 +1,30 @@
+{
+  "bsonType": "object",
+  "required": ["gender"],
+  "permission": {
+    "read": true,
+    "create": true,
+    "update": "doc._id == auth.uid",
+    "delete": false
+  },
+  "properties": {
+    "_id": { "description": "用户ID" },
+    "openid": { "bsonType": "string", "description": "微信/抖音openid" },
+    "platform": { "bsonType": "string", "description": "平台" },
+    "nickname": { "bsonType": "string", "description": "昵称" },
+    "gender": { "bsonType": "string", "enum": ["male", "female"], "description": "性别" },
+    "word_balance": { "bsonType": "int", "description": "字数余额", "minimum": 0 },
+    "total_words_used": { "bsonType": "int", "description": "累计使用字数" },
+    "total_ads_watched": { "bsonType": "int", "description": "累计观看广告次数" },
+    "daily_ads_count": { "bsonType": "int", "description": "今日广告次数" },
+    "daily_ads_reset_date": { "bsonType": "string", "description": "广告次数重置日期" },
+    "daily_free_claimed": { "bsonType": "bool", "description": "是否已领取每日赠送" },
+    "daily_share_claimed": { "bsonType": "bool", "description": "是否已领取分享奖励" },
+    "consecutive_login_days": { "bsonType": "int", "description": "连续登录天数" },
+    "last_login_date": { "bsonType": "string", "description": "最后登录日期" },
+    "current_lover_id": { "bsonType": "string", "description": "当前恋人ID" },
+    "lover_history": { "bsonType": "array", "description": "恋人历史" },
+    "created_at": { "bsonType": "string", "description": "创建时间" },
+    "updated_at": { "bsonType": "string", "description": "更新时间" }
+  }
+}

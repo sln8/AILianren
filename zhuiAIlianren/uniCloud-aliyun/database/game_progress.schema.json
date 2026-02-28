@@ -1,0 +1,30 @@
+{
+  "bsonType": "object",
+  "required": ["user_id", "lover_id"],
+  "permission": {
+    "read": "doc.user_id == auth.uid",
+    "create": true,
+    "update": "doc.user_id == auth.uid",
+    "delete": false
+  },
+  "properties": {
+    "_id": { "description": "进度ID" },
+    "user_id": { "bsonType": "string", "description": "用户ID" },
+    "lover_id": { "bsonType": "string", "description": "恋人ID" },
+    "favorability": { "bsonType": "int", "description": "好感度", "minimum": 0 },
+    "relationship_stage": { "bsonType": "string", "description": "关系阶段" },
+    "total_chat_rounds": { "bsonType": "int", "description": "总对话轮数" },
+    "chat_days": { "bsonType": "int", "description": "对话天数" },
+    "events_triggered": { "bsonType": "array", "description": "已触发事件" },
+    "milestones_reached": { "bsonType": "array", "description": "已达成里程碑" },
+    "marriage_date": { "bsonType": "string", "description": "结婚日期" },
+    "children": { "bsonType": "array", "description": "子女" },
+    "marriage_years": { "bsonType": "int", "description": "婚龄" },
+    "lover_alive": { "bsonType": "bool", "description": "恋人是否存活" },
+    "game_ended": { "bsonType": "bool", "description": "游戏是否结束" },
+    "chat_summary": { "bsonType": "string", "description": "对话摘要" },
+    "last_mood": { "bsonType": "string", "description": "最后心情" },
+    "created_at": { "bsonType": "string", "description": "创建时间" },
+    "updated_at": { "bsonType": "string", "description": "更新时间" }
+  }
+}

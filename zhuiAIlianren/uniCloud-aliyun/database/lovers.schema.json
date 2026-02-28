@@ -1,0 +1,27 @@
+{
+  "bsonType": "object",
+  "required": ["name", "gender"],
+  "permission": {
+    "read": true,
+    "create": false,
+    "update": false,
+    "delete": false
+  },
+  "properties": {
+    "_id": { "description": "恋人ID" },
+    "name": { "bsonType": "string", "description": "姓名" },
+    "gender": { "bsonType": "string", "enum": ["male", "female"], "description": "性别" },
+    "age": { "bsonType": "int", "description": "年龄" },
+    "persona": { "bsonType": "string", "description": "人设" },
+    "personality_tags": { "bsonType": "array", "description": "性格标签" },
+    "occupation": { "bsonType": "string", "description": "职业" },
+    "height": { "bsonType": "string", "description": "身高" },
+    "hobbies": { "bsonType": "array", "description": "爱好" },
+    "likes": { "bsonType": "array", "description": "喜欢" },
+    "dislikes": { "bsonType": "array", "description": "讨厌" },
+    "speaking_style": { "bsonType": "string", "description": "说话风格" },
+    "avatar_image": { "bsonType": "string", "description": "头像图片路径" },
+    "description": { "bsonType": "string", "description": "角色描述" },
+    "created_at": { "bsonType": "string", "description": "创建时间" }
+  }
+}
