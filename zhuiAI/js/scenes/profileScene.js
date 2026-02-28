@@ -111,7 +111,7 @@ class ProfileScene {
       if (this.loverImage) {
         const imgSize = config.UI_LAYOUT.PROFILE_AVATAR_SIZE;
         const imgX = (w - imgSize) / 2;
-        const imgY = y + 10;
+        const imgY = y + config.UI_LAYOUT.PROFILE_AVATAR_TOP_OFFSET;
         
         // 绘制圆形头像
         ctx.save();
@@ -152,9 +152,9 @@ class ProfileScene {
         ctx.fillStyle = config.THEME.white;
         ctx.font = `bold 16px "PingFang SC", "Microsoft YaHei", sans-serif`;
         ctx.textAlign = 'center';
-        ctx.fillText(lover.name, w / 2, imgY + imgSize + 20);
+        ctx.fillText(lover.name, w / 2, imgY + imgSize + config.UI_LAYOUT.PROFILE_NAME_OFFSET_Y);
         ctx.font = `12px "PingFang SC", "Microsoft YaHei", sans-serif`;
-        ctx.fillText(lover.tag, w / 2, imgY + imgSize + 38);
+        ctx.fillText(lover.tag, w / 2, imgY + imgSize + config.UI_LAYOUT.PROFILE_TAG_OFFSET_Y);
         
         y += imgSize + 50;
       } else {

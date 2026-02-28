@@ -27,15 +27,11 @@ class ChatScene {
     this.progress = null;
     this.loverImage = null; // 恋人形象图片
 
-    // 安全区域 - 防止摄像头阻挡（从配置加载）
-    this.SAFE_AREA_TOP = config.SAFE_AREA.TOP;
-    this.SAFE_AREA_BOTTOM = config.SAFE_AREA.BOTTOM;
-
     // 布局常量 - 调整为包含安全区域
     this.STATUS_BAR_H = 60;
     this.INPUT_BAR_H = 56;
-    this.CHAT_TOP = this.STATUS_BAR_H + this.SAFE_AREA_TOP;
-    this.CHAT_BOTTOM = this.h - this.INPUT_BAR_H - this.SAFE_AREA_BOTTOM;
+    this.CHAT_TOP = this.STATUS_BAR_H + config.SAFE_AREA.TOP;
+    this.CHAT_BOTTOM = this.h - this.INPUT_BAR_H - config.SAFE_AREA.BOTTOM;
     this.CHAT_H = this.CHAT_BOTTOM - this.CHAT_TOP;
     this.MSG_PADDING = 12;
 
@@ -114,7 +110,7 @@ class ChatScene {
   _setupLayout() {
     const w = this.w;
     const h = this.h;
-    const barY = h - this.INPUT_BAR_H - this.SAFE_AREA_BOTTOM;
+    const barY = h - this.INPUT_BAR_H - config.SAFE_AREA.BOTTOM;
 
     // 输入区域
     this.inputArea = { x: 12, y: barY + 8, w: w - 130, h: 40 };
@@ -123,7 +119,7 @@ class ChatScene {
     // 广告按钮
     this.adBtn = { x: w - 56, y: barY + 8, w: 44, h: 40 };
     // 菜单按钮（状态栏右上角，考虑顶部安全区域）
-    this.menuBtn = { x: w - 40, y: 10 + this.SAFE_AREA_TOP, w: 30, h: 30 };
+    this.menuBtn = { x: w - 40, y: 10 + config.SAFE_AREA.TOP, w: 30, h: 30 };
   }
 
   async _checkDailyLogin() {
@@ -604,11 +600,7 @@ class ChatScene {
     const stage = config.getStageByFavor(favor);
     const wordBalance = (player && player.word_balance) || 0;
 
-    // 添加顶部安全区域背景
-    ctx.fillStyle = config.THEME.white;
-    ctx.fillRect(0, 0, w, this.STATUS_BAR_H + this.SAFE_AREA_TOP);
-
-    UI.drawStatusBar(ctx, w, favor, stage.name, wordBalance, this.SAFE_AREA_TOP);
+    UI.drawStatusBar(ctx, w, favor, stage.name, wordBalance, config.SAFE_AREA.TOP);
 
     // 菜单按钮
     ctx.fillStyle = config.THEME.textLight;
@@ -623,11 +615,11 @@ class ChatScene {
     const ctx = this.ctx;
     const w = this.w;
     const h = this.h;
-    const barY = h - this.INPUT_BAR_H - this.SAFE_AREA_BOTTOM;
+    const barY = h - this.INPUT_BAR_H - config.SAFE_AREA.BOTTOM;
 
-    // 背景
+    // 背景（包含底部安全区域）
     ctx.fillStyle = config.THEME.white;
-    ctx.fillRect(0, barY, w, this.INPUT_BAR_H + this.SAFE_AREA_BOTTOM);
+    ctx.fillRect(0, barY, w, this.INPUT_BAR_H + config.SAFE_AREA.BOTTOM);
     // 上边线
     ctx.strokeStyle = '#E0E0E0';
     ctx.lineWidth = 0.5;
