@@ -128,8 +128,7 @@ const AD_CONFIG = {
 // ===== 大模型API配置（需替换为真实配置） =====
 const AI_CONFIG = {
   API_ENDPOINT: 'https://ark.cn-beijing.volces.com/api/v3/chat/completions',  // 火山方舟API地址
-  MODEL_MINI: 'doubao-seed-2-0-mini-260215',       // 替换为真实的doubao-lite端点ID
-  MODEL_PRO: 'YOUR_DOUBAO_PRO_MODEL_ENDPOINT_ID',         // 替换为真实的doubao-pro端点ID
+  MODEL: 'Doubao-Seed-2.0-mini',                           // 使用Doubao-Seed-2.0-mini大模型
   API_KEY: 'd3d95f0e-717b-41cf-b08c-5ac1c23dac43',                            // 替换为真实的API Key
   MAX_CONTEXT_ROUNDS: 20,                                   // 上下文保留轮次
 };
@@ -183,6 +182,28 @@ const THEME = {
   overlay: 'rgba(0,0,0,0.5)', // 遮罩层
 };
 
+// ===== 安全区域配置 =====
+const SAFE_AREA = {
+  TOP: 44,      // 顶部安全区域（刘海屏/摄像头区域）
+  BOTTOM: 34,   // 底部安全区域（Home指示器区域）
+};
+
+// ===== 资源路径配置 =====
+const ASSET_PATHS = {
+  LOVER_AVATAR: (loverId) => `images/${loverId}_avatar.png`,  // 恋人头像路径模板
+};
+
+// ===== UI布局常量 =====
+const UI_LAYOUT = {
+  PROFILE_AVATAR_SIZE: 120,             // 个人中心头像尺寸
+  PROFILE_AVATAR_BORDER_WIDTH: 3,       // 个人中心头像边框宽度
+  PROFILE_AVATAR_TOP_OFFSET: 10,        // 个人中心头像顶部偏移
+  PROFILE_NAME_OFFSET_Y: 20,            // 个人中心名字相对头像底部偏移
+  PROFILE_TAG_OFFSET_Y: 38,             // 个人中心标签相对头像底部偏移
+  PROFILE_AVATAR_BOTTOM_MARGIN: 50,     // 个人中心头像区域底部间距
+  CHAT_BACKGROUND_IMAGE_OPACITY: 0.3,   // 聊天背景图片透明度
+};
+
 // ===== 工具函数 =====
 function getStageByFavor(favor) {
   for (let i = STAGES.length - 1; i >= 0; i--) {
@@ -202,6 +223,6 @@ function getLoversForGender(playerGender) {
 
 module.exports = {
   STAGES, MALE_LOVERS, FEMALE_LOVERS, WORD_ECONOMY, AD_CONFIG,
-  AI_CONFIG, ACHIEVEMENTS, EVENTS, THEME,
+  AI_CONFIG, ACHIEVEMENTS, EVENTS, THEME, SAFE_AREA, ASSET_PATHS, UI_LAYOUT,
   getStageByFavor, getLoverById, getLoversForGender,
 };

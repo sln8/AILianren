@@ -46,15 +46,12 @@ const WORD_ECONOMY = {
   LOGIN_BONUS: { 3: 100, 5: 200, 7: 500 },
   SWITCH_LOVER_AD_COST: 3,
   STAGE_ROUND_LIMIT: 50,          // 每个阶段最多停留轮次
-  KEY_MOMENT_ROUND_THRESHOLD: 45, // 接近阶段上限时使用高级模型的轮次阈值
-  KEY_MOMENT_FAVOR_MARGIN: 20,    // 接近好感度上限时使用高级模型的好感度差值
 };
 
 // 大模型配置（需替换为真实值）
 const AI_CONFIG = {
   API_ENDPOINT: 'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
-  MODEL_LITE: 'YOUR_DOUBAO_LITE_MODEL_ENDPOINT_ID',
-  MODEL_PRO: 'YOUR_DOUBAO_PRO_MODEL_ENDPOINT_ID',
+  MODEL: 'Doubao-Seed-2.0-mini',
   API_KEY: 'YOUR_VOLC_API_KEY',
   MAX_CONTEXT_ROUNDS: 20,
 };

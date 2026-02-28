@@ -25,12 +25,13 @@ class ChatScene {
     // 恋人信息
     this.lover = null;
     this.progress = null;
+    this.loverImage = null; // 恋人形象图片
 
-    // 布局常量
+    // 布局常量 - 调整为包含安全区域
     this.STATUS_BAR_H = 60;
     this.INPUT_BAR_H = 56;
-    this.CHAT_TOP = this.STATUS_BAR_H;
-    this.CHAT_BOTTOM = this.h - this.INPUT_BAR_H;
+    this.CHAT_TOP = this.STATUS_BAR_H + config.SAFE_AREA.TOP;
+    this.CHAT_BOTTOM = this.h - this.INPUT_BAR_H - config.SAFE_AREA.BOTTOM;
     this.CHAT_H = this.CHAT_BOTTOM - this.CHAT_TOP;
     this.MSG_PADDING = 12;
 
@@ -60,6 +61,8 @@ class ChatScene {
 
     if (player && player.current_lover_id) {
       this.lover = config.getLoverById(player.current_lover_id);
+      // 加载恋人形象图片
+      this._loadLoverImage(player.current_lover_id);
     }
     this.progress = progress || { favor: 0, stage: 0, stage_round_count: 0, total_rounds: 0, events_triggered: [] };
     this.messages = dataManager.getMessages() || [];
@@ -107,7 +110,7 @@ class ChatScene {
   _setupLayout() {
     const w = this.w;
     const h = this.h;
-    const barY = h - this.INPUT_BAR_H;
+    const barY = h - this.INPUT_BAR_H - config.SAFE_AREA.BOTTOM;
 
     // 输入区域
     this.inputArea = { x: 12, y: barY + 8, w: w - 130, h: 40 };
@@ -116,7 +119,7 @@ class ChatScene {
     // 广告按钮
     this.adBtn = { x: w - 56, y: barY + 8, w: 44, h: 40 };
     // 菜单按钮（状态栏右上角）
-    this.menuBtn = { x: w - 40, y: 10, w: 30, h: 30 };
+    this.menuBtn = { x: w - 40, y: 10 + config.SAFE_AREA.TOP, w: 30, h: 30 };
   }
 
   async _checkDailyLogin() {
@@ -139,8 +142,8 @@ class ChatScene {
     const dy = touch.clientY - this.lastTouchY;
     this.lastTouchY = touch.clientY;
 
-    // 在聊天区域内滚动
-    if (touch.clientY > this.STATUS_BAR_H && touch.clientY < this.CHAT_BOTTOM) {
+    // 在聊天区域内滚动（考虑安全区域）
+    if (touch.clientY > this.CHAT_TOP && touch.clientY < this.CHAT_BOTTOM) {
       this.scrollY = Math.max(0, Math.min(this.maxScrollY, this.scrollY - dy));
       this.render();
     }
@@ -316,6 +319,21 @@ class ChatScene {
     }
   }
 
+  /** 加载恋人形象图片 */
+  _loadLoverImage(loverId) {
+    const imagePath = config.ASSET_PATHS.LOVER_AVATAR(loverId);
+    UI.loadImage(
+      imagePath,
+      (img) => {
+        this.loverImage = img;
+        this.render();
+      },
+      () => {
+        this.loverImage = null;
+      }
+    );
+  }
+
   /** 观看广告 */
   async _watchAd() {
     try {
@@ -424,8 +442,35 @@ class ChatScene {
     ctx.fillStyle = '#F5F5F5';
     ctx.fillRect(0, 0, w, h);
 
-    // 恋人形象背景色
-    if (this.lover) {
+    // 恋人形象作为全屏背景
+    if (this.loverImage && this.loverImage.width > 0 && this.loverImage.height > 0) {
+      // 绘制全屏背景图片
+      ctx.save();
+      ctx.globalAlpha = config.UI_LAYOUT.CHAT_BACKGROUND_IMAGE_OPACITY;
+      
+      // 计算图片缩放以填充屏幕
+      const imgAspect = this.loverImage.width / this.loverImage.height;
+      const screenAspect = w / h;
+      let drawW, drawH, drawX, drawY;
+      
+      if (imgAspect > screenAspect) {
+        // 图片更宽，以高度为准
+        drawH = h;
+        drawW = h * imgAspect;
+        drawX = (w - drawW) / 2;
+        drawY = 0;
+      } else {
+        // 图片更高，以宽度为准
+        drawW = w;
+        drawH = w / imgAspect;
+        drawX = 0;
+        drawY = (h - drawH) / 2;
+      }
+      
+      ctx.drawImage(this.loverImage, drawX, drawY, drawW, drawH);
+      ctx.restore();
+    } else if (this.lover) {
+      // 如果图片未加载，使用渐变背景色
       const bgGradient = ctx.createLinearGradient(0, 0, 0, h * 0.3);
       bgGradient.addColorStop(0, this.lover.bgColor || '#FFF5F7');
       bgGradient.addColorStop(1, '#F5F5F5');
@@ -453,13 +498,13 @@ class ChatScene {
     const ctx = this.ctx;
     const w = this.w;
 
-    // 裁剪区域
+    // 裁剪区域（考虑安全区域）
     ctx.save();
     ctx.beginPath();
-    ctx.rect(0, this.STATUS_BAR_H, w, this.CHAT_H);
+    ctx.rect(0, this.CHAT_TOP, w, this.CHAT_H);
     ctx.clip();
 
-    let y = this.STATUS_BAR_H + this.MSG_PADDING - this.scrollY;
+    let y = this.CHAT_TOP + this.MSG_PADDING - this.scrollY;
     const maxBubbleW = w * 0.65;
     const fontSize = 14;
     const padding = 10;
@@ -555,7 +600,7 @@ class ChatScene {
     const stage = config.getStageByFavor(favor);
     const wordBalance = (player && player.word_balance) || 0;
 
-    UI.drawStatusBar(ctx, w, favor, stage.name, wordBalance);
+    UI.drawStatusBar(ctx, w, favor, stage.name, wordBalance, config.SAFE_AREA.TOP);
 
     // 菜单按钮
     ctx.fillStyle = config.THEME.textLight;
@@ -570,11 +615,11 @@ class ChatScene {
     const ctx = this.ctx;
     const w = this.w;
     const h = this.h;
-    const barY = h - this.INPUT_BAR_H;
+    const barY = this.CHAT_BOTTOM;
 
-    // 背景
+    // 背景（包含底部安全区域）
     ctx.fillStyle = config.THEME.white;
-    ctx.fillRect(0, barY, w, this.INPUT_BAR_H);
+    ctx.fillRect(0, barY, w, this.INPUT_BAR_H + config.SAFE_AREA.BOTTOM);
     // 上边线
     ctx.strokeStyle = '#E0E0E0';
     ctx.lineWidth = 0.5;
