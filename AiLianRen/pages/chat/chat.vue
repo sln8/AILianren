@@ -283,7 +283,7 @@ import {
   updateLoverStats, checkStageAdvance,
   attemptConfession, attemptProposal,
   calculateFavorDecay, generateOfflineMessage,
-  getSpecialDateGreeting, getPersonalityGrowthModifier
+  getSpecialDateGreeting
 } from '@/utils/game-logic.js'
 import {
   showRewardedVideoAd, showInterstitialAd,
@@ -540,14 +540,7 @@ export default {
 
         // 更新恋人档案数值（好感度、对话轮数等）
         this.loverData = updateLoverStats(this.loverData, aiResult)
-        // 应用性格成长修正
-        if (aiResult.favor_change && this.loverData.characterId) {
-          const modifiedChange = getPersonalityGrowthModifier(this.loverData.characterId, aiResult.favor_change)
-          const diff = modifiedChange - aiResult.favor_change
-          if (diff !== 0) {
-            this.loverData.favorScore = Math.max(0, Math.min(500, this.loverData.favorScore + diff))
-          }
-        }
+        // 注意：性格成长修正已在云函数(chat-send)中统一应用，客户端不重复处理
         this.loverData.totalWordsConsumed = (this.loverData.totalWordsConsumed || 0) + msgWordCount + aiWordCount
         this.loverData.lastChatAt = new Date().toISOString()
 
@@ -999,8 +992,10 @@ export default {
      * 检查当前时间并设置日夜模式（19:00-06:00为夜间）
      */
     checkDayNightMode() {
+      const NIGHT_START = 19
+      const NIGHT_END = 6
       const hour = new Date().getHours()
-      this.isNightMode = hour >= 19 || hour < 6
+      this.isNightMode = hour >= NIGHT_START || hour < NIGHT_END
     },
 
     // ==================== 离线消息与好感度衰减 ====================

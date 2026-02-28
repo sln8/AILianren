@@ -378,7 +378,7 @@ export function getSpecialDateGreeting() {
     { month: 5, day: 20, name: '520', greeting: '520！我爱你！今天要比平时多说一句喜欢你～' },
     { month: 6, day: 1, name: '儿童节', greeting: '六一快乐！今天让我们都做回小孩子吧～' },
     { month: 7, day: 7, name: '七夕', greeting: '七夕快乐！如果许一个愿望，我希望一直和你在一起～' },
-    { month: 8, day: 8, name: '七夕(备用)', greeting: '今天是个特别的日子呢～' },
+    { month: 8, day: 4, name: '七夕(农历备用)', greeting: '今天是个特别的日子呢，有没有想我？～' },
     { month: 10, day: 1, name: '国庆节', greeting: '国庆快乐！假期想和你一起去玩～' },
     { month: 11, day: 11, name: '双十一', greeting: '光棍节？不，有你在就不是光棍啦！' },
     { month: 12, day: 24, name: '平安夜', greeting: '平安夜快乐！愿你每一天都平安幸福～' },
