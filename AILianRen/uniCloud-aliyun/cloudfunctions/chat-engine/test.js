@@ -1,7 +1,7 @@
 // Chat Engine Test Script
 // 用于测试 chat-engine 云函数的功能
 
-// Sample character data (from utils/characters.js)
+// Sample character data (similar to frontend character objects)
 const testCharacter = {
 	id: 'F01',
 	name: '苏晚晴',

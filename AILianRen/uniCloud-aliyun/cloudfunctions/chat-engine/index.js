@@ -447,7 +447,7 @@ async function saveChatHistory(userId, characterId, role, content, gameStateId) 
 }
 
 exports.main = async (event, context) => {
-	const { characterId, character: characterFromClient, userMessage, gameState, recentMessages } = event
+	const { characterId, character: clientCharacter, userMessage, gameState, recentMessages } = event
 
 	if (!characterId || !userMessage) {
 		return { code: -1, msg: '缺少必要参数' }
@@ -465,8 +465,8 @@ exports.main = async (event, context) => {
 		let character = null
 		
 		// First priority: use character object from client if provided
-		if (characterFromClient) {
-			character = characterFromClient
+		if (clientCharacter) {
+			character = clientCharacter
 		}
 		
 		// Second priority: try to load from database
