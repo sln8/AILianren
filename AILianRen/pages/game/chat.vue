@@ -309,6 +309,7 @@ export default {
 		      name: 'chat-engine', // 必须与您的云函数名称一致
 		      data: {
 		        characterId: this.character.id,
+		        character: this.character,           // Pass full character object
 		        userMessage: userMessage,
 		        gameState: gameStore.state,          // 当前游戏状态
 		        recentMessages: chatStore.state.messages // 最近对话（用于上下文）
