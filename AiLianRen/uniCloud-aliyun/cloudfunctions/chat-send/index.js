@@ -159,7 +159,10 @@ exports.main = async (event, context) => {
     })
 
     // ===== 10. 更新恋人数值 =====
-    const newFavor = clamp(lover.favor_score + (aiResult.favor_change || 0), 0, 500)
+    // Apply personality growth modifier
+    const personalityModifier = getPersonalityModifier(lover.character_id)
+    const modifiedFavorChange = Math.round((aiResult.favor_change || 0) * personalityModifier)
+    const newFavor = clamp(lover.favor_score + modifiedFavorChange, 0, 500)
     const newIntimacy = clamp(lover.intimacy_score + (aiResult.intimacy_change || 0), 0, 100)
     const newTrust = clamp(lover.trust_score + (aiResult.trust_change || 0), 0, 100)
     const newRomance = clamp(lover.romance_score + (aiResult.romance_change || 0), 0, 100)
@@ -175,7 +178,8 @@ exports.main = async (event, context) => {
       romance_score: newRomance,
       total_rounds: dbCmd.inc(1),
       total_words_consumed: dbCmd.inc(totalCost),
-      last_chat_at: new Date()
+      last_chat_at: new Date(),
+      last_emotion: aiResult.emotion
     }
 
     if (stageResult.advanced) {
@@ -285,9 +289,11 @@ function parseAiResponse(text) {
     }
 
     if (parsed && parsed.reply) {
+      const validEmotions = ['happy', 'shy', 'sad', 'angry', 'neutral', 'surprised', 'worried', 'missing', 'jealous', 'nostalgic', 'proud', 'curious']
+      const emotion = validEmotions.includes(parsed.emotion) ? parsed.emotion : 'neutral'
       return {
         reply: parsed.reply,
-        emotion: parsed.emotion || 'neutral',
+        emotion: emotion,
         favor_change: typeof parsed.favor_change === 'number' ? parsed.favor_change : 1,
         intimacy_change: typeof parsed.intimacy_change === 'number' ? parsed.intimacy_change : 0,
         trust_change: typeof parsed.trust_change === 'number' ? parsed.trust_change : 0,
@@ -412,12 +418,24 @@ function buildSystemPrompt(config, lover, maxWords) {
 - 当前好感度：${lover.favor_score}
 - 亲密度：${lover.intimacy_score}
 - 信任值：${lover.trust_score}
+- AI上一轮的情绪状态：${lover.last_emotion || 'neutral'}
 
 【性格特点】
 ${config.extra}
 
 【主动性规则】
 ${getProactivenessRules(lover.stage)}
+
+【记忆与话题规则】
+- 如果关系摘要中提到过的话题，你可以在合适的时机主动提起，展现你记住了对方说过的话
+- 在好友阶段（第4阶段）以上，你应该偶尔引用之前聊过的内容，让对方感到被重视
+- 在对话陷入僵局或对方回复简短时，你应该主动提起之前聊过的有趣话题或共同经历来恢复聊天氛围
+
+【情绪延续规则】
+- 你的上一轮情绪是"${lover.last_emotion || 'neutral'}"，这会影响你当前回复的基调
+- 如果上一轮是sad，这一轮可能仍有些低落，除非对方说了让你开心的话
+- 如果上一轮是angry，这一轮可能还有些不满，但也可能因为对方的道歉而转变
+- 情绪变化要自然过渡，不要突然大幅转变
 
 【核心规则】
 1. 始终保持角色扮演，不能跳出角色
@@ -431,12 +449,13 @@ ${getProactivenessRules(lover.stage)}
    - 婚后阶段：温馨、日常、偶有矛盾但互相包容
 3. 好感度变化合理
 4. 拒绝违规内容
-5. 回复不超过${maxWords}字
+5. 不要重复之前说过的话题或相似的回复内容，每次回复都要有新意
+6. 回复不超过${maxWords}字
 
 【回复格式 - 纯JSON】
 {
   "reply": "回复内容（不超过${maxWords}字）",
-  "emotion": "happy/shy/sad/angry/neutral/surprised",
+  "emotion": "happy/shy/sad/angry/neutral/surprised/worried/missing/jealous/nostalgic/proud/curious",
   "favor_change": -20到8的整数,
   "intimacy_change": -5到3的整数,
   "trust_change": -5到3的整数,
@@ -485,6 +504,21 @@ function checkStageAdvance(lover, newFavor) {
   }
 
   return { advanced: false }
+}
+
+/**
+ * 获取角色性格好感度成长系数
+ * @param {string} characterId - 角色ID
+ * @returns {number} 成长系数
+ */
+function getPersonalityModifier(characterId) {
+  const modifiers = {
+    'F01': 1.0, 'F05': 1.0, 'M01': 1.0, 'M05': 1.1,
+    'F02': 1.2, 'M02': 1.2,
+    'F03': 0.8, 'M03': 0.8,
+    'F04': 1.1, 'M04': 1.1
+  }
+  return modifiers[characterId] || 1.0
 }
 
 /**
