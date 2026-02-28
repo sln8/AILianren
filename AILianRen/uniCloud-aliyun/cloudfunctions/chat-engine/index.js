@@ -36,19 +36,24 @@ function buildSystemPrompt(character, gameState, conversationMemory) {
 	const stage = STAGES[gameState.stageIndex] || STAGES[0]
 	const moodDesc = describeMood(gameState.mood || 'normal')
 	
+	// Handle different field name variations (database vs. client-side character data)
+	const personality = character.personality || character.personalityDetail || ''
+	const speakingStyle = character.speakingStyle || character.speaking_style || character.speechStyle || '自然真实'
+	const background = character.background || character.backstory || ''
+	
 	// Extract personality keywords for better AI control
-	const personalityKeywords = extractPersonalityKeywords(character.personality || '')
+	const personalityKeywords = extractPersonalityKeywords(personality)
 	const memoryContext = conversationMemory ? `\n## 对话记忆\n${conversationMemory}` : ''
 
 	return `你是一个AI恋爱游戏中的角色，请严格按照以下设定进行角色扮演。
 
 ## 角色信息
 - 姓名：${character.name}
-- 性格：${character.personality}
+- 性格：${personality}
 - 性格关键词：${personalityKeywords.join('、')}
-- 说话风格：${character.speakingStyle || character.speaking_style || '自然真实'}
+- 说话风格：${speakingStyle}
 - 兴趣爱好：${(character.hobbies || []).join('、')}
-- 背景故事：${character.background || ''}
+- 背景故事：${background}
 
 ## 当前状态
 - 关系阶段：${stage.name}（阶段${gameState.stageIndex || 0}）
@@ -318,7 +323,7 @@ function simulateResponse(character, gameState, userMessage) {
 }
 
 function generateReplies(character, stageIndex, sentiment, isQuestion, userMessage) {
-	const personality = (character.personality || '').toLowerCase()
+	const personality = (character.personality || character.personalityDetail || '').toLowerCase()
 	const isGentle = personality.includes('温柔') || personality.includes('gentle')
 	const isCold = personality.includes('高冷') || personality.includes('冷')
 	const isCheerful = personality.includes('开朗') || personality.includes('活泼') || personality.includes('元气')
@@ -442,7 +447,7 @@ async function saveChatHistory(userId, characterId, role, content, gameStateId) 
 }
 
 exports.main = async (event, context) => {
-	const { characterId, userMessage, gameState, recentMessages } = event
+	const { characterId, character: clientCharacter, userMessage, gameState, recentMessages } = event
 
 	if (!characterId || !userMessage) {
 		return { code: -1, msg: '缺少必要参数' }
@@ -453,17 +458,30 @@ exports.main = async (event, context) => {
 	}
 
 	try {
-		// Load character info from database
+		// Load character info from multiple sources with priority:
+		// 1. Character object passed from client
+		// 2. Character from database
+		// 3. Character from gameState
 		let character = null
-		try {
-			const charRes = await db.collection('characters').doc(characterId).get()
-			if (charRes.data && charRes.data.length > 0) {
-				character = charRes.data[0]
+		
+		// First priority: use character object from client if provided
+		if (clientCharacter) {
+			character = clientCharacter
+		}
+		
+		// Second priority: try to load from database
+		if (!character) {
+			try {
+				const charRes = await db.collection('characters').doc(characterId).get()
+				if (charRes.data && charRes.data.length > 0) {
+					character = charRes.data[0]
+				}
+			} catch (e) {
+				// Character not found in DB, continue to next fallback
 			}
-		} catch (e) {
-			// Character not found in DB, use gameState character info as fallback
 		}
 
+		// Third priority: use character from gameState as fallback
 		if (!character && gameState && gameState.character) {
 			character = gameState.character
 		}
