@@ -25,16 +25,15 @@ exports.main = async (event, context) => {
 
   try {
     // ===== 1. 获取用户openid =====
-    // #ifdef MP-WEIXIN
-    // 微信小程序登录
-    if (event.code) {
+    // 云函数中通过 context.PLATFORM 判断平台，不使用条件编译
+    if (PLATFORM === 'mp-weixin' && event.code) {
+      // 微信小程序登录：通过 code 换取 openid
       const wxRes = await uniCloud.httpclient.request(
         `https://api.weixin.qq.com/sns/jscode2session?appid=${event.appid}&secret=${event.secret}&js_code=${event.code}&grant_type=authorization_code`,
         { dataType: 'json' }
       )
       openid = wxRes.data.openid
     }
-    // #endif
 
     // 如果没有获取到openid，使用设备ID作为替代
     if (!openid) {
