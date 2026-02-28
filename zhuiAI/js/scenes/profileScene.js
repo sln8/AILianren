@@ -16,11 +16,34 @@ class ProfileScene {
     this.scrollY = 0;
     this.touchStartY = 0;
     this.lastTouchY = 0;
+    this.loverImage = null; // 恋人形象图片
   }
 
   onEnter() {
     this.scrollY = 0;
+    const player = dataManager.getPlayerData();
+    // 加载恋人形象图片
+    if (player && player.current_lover_id) {
+      this._loadLoverImage(player.current_lover_id);
+    }
     this.render();
+  }
+
+  /** 加载恋人形象图片 */
+  _loadLoverImage(loverId) {
+    const imagePath = `images/${loverId}_avatar.png`;
+    if (typeof tt !== 'undefined' && tt.createImage) {
+      const img = tt.createImage();
+      img.onload = () => {
+        this.loverImage = img;
+        this.render();
+      };
+      img.onerror = () => {
+        console.log('恋人形象图片加载失败:', imagePath);
+        this.loverImage = null;
+      };
+      img.src = imagePath;
+    }
   }
 
   onTouchStart(e) {
@@ -86,16 +109,71 @@ class ProfileScene {
 
     // 恋人头像和名字
     if (lover) {
-      UI.drawAvatar(ctx, w / 2, y + 30, 30, lover.name, config.THEME.white);
-      ctx.fillStyle = config.THEME.white;
-      ctx.font = `bold 16px "PingFang SC", "Microsoft YaHei", sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.fillText(lover.name, w / 2, y + 75);
-      ctx.font = `12px "PingFang SC", "Microsoft YaHei", sans-serif`;
-      ctx.fillText(lover.tag, w / 2, y + 95);
+      // 显示恋人形象图片
+      if (this.loverImage) {
+        const imgSize = 120; // 图片显示尺寸
+        const imgX = (w - imgSize) / 2;
+        const imgY = y + 10;
+        
+        // 绘制圆形头像
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(w / 2, imgY + imgSize / 2, imgSize / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+        
+        // 计算图片缩放
+        const imgAspect = this.loverImage.width / this.loverImage.height;
+        let drawW, drawH, drawX, drawY;
+        
+        if (imgAspect > 1) {
+          // 图片更宽
+          drawH = imgSize;
+          drawW = imgSize * imgAspect;
+          drawX = imgX - (drawW - imgSize) / 2;
+          drawY = imgY;
+        } else {
+          // 图片更高
+          drawW = imgSize;
+          drawH = imgSize / imgAspect;
+          drawX = imgX;
+          drawY = imgY - (drawH - imgSize) / 2;
+        }
+        
+        ctx.drawImage(this.loverImage, drawX, drawY, drawW, drawH);
+        ctx.restore();
+        
+        // 绘制圆形边框
+        ctx.strokeStyle = config.THEME.white;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(w / 2, imgY + imgSize / 2, imgSize / 2, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // 恋人名字和标签（在图片下方）
+        ctx.fillStyle = config.THEME.white;
+        ctx.font = `bold 16px "PingFang SC", "Microsoft YaHei", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText(lover.name, w / 2, imgY + imgSize + 20);
+        ctx.font = `12px "PingFang SC", "Microsoft YaHei", sans-serif`;
+        ctx.fillText(lover.tag, w / 2, imgY + imgSize + 38);
+        
+        y += imgSize + 50;
+      } else {
+        // 如果图片未加载，使用默认头像
+        UI.drawAvatar(ctx, w / 2, y + 30, 30, lover.name, config.THEME.white);
+        ctx.fillStyle = config.THEME.white;
+        ctx.font = `bold 16px "PingFang SC", "Microsoft YaHei", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText(lover.name, w / 2, y + 75);
+        ctx.font = `12px "PingFang SC", "Microsoft YaHei", sans-serif`;
+        ctx.fillText(lover.tag, w / 2, y + 95);
+        
+        y += 130;
+      }
+    } else {
+      y += 130;
     }
-
-    y += 130;
 
     // 数据卡片区域
     const cardMargin = 16;

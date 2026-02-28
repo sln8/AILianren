@@ -189,20 +189,21 @@ const UI = {
   },
 
   /** 绘制顶部状态栏 */
-  drawStatusBar(ctx, w, favor, stageName, wordBalance) {
+  drawStatusBar(ctx, w, favor, stageName, wordBalance, safeAreaTop) {
     const barH = 60;
+    const topOffset = safeAreaTop || 0;
     // 半透明背景
     ctx.fillStyle = 'rgba(255,255,255,0.9)';
-    ctx.fillRect(0, 0, w, barH);
+    ctx.fillRect(0, 0, w, barH + topOffset);
     // 底部分割线
     ctx.strokeStyle = '#F0F0F0';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(0, barH);
-    ctx.lineTo(w, barH);
+    ctx.moveTo(0, barH + topOffset);
+    ctx.lineTo(w, barH + topOffset);
     ctx.stroke();
 
-    const y = 20;
+    const y = 20 + topOffset;
     const fontSize = 13;
     ctx.font = `${fontSize}px "PingFang SC", "Microsoft YaHei", sans-serif`;
     ctx.textBaseline = 'middle';

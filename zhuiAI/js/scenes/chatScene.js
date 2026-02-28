@@ -25,12 +25,17 @@ class ChatScene {
     // 恋人信息
     this.lover = null;
     this.progress = null;
+    this.loverImage = null; // 恋人形象图片
 
-    // 布局常量
+    // 安全区域 - 防止摄像头阻挡
+    this.SAFE_AREA_TOP = 44;  // 顶部安全区域
+    this.SAFE_AREA_BOTTOM = 34; // 底部安全区域
+
+    // 布局常量 - 调整为包含安全区域
     this.STATUS_BAR_H = 60;
     this.INPUT_BAR_H = 56;
-    this.CHAT_TOP = this.STATUS_BAR_H;
-    this.CHAT_BOTTOM = this.h - this.INPUT_BAR_H;
+    this.CHAT_TOP = this.STATUS_BAR_H + this.SAFE_AREA_TOP;
+    this.CHAT_BOTTOM = this.h - this.INPUT_BAR_H - this.SAFE_AREA_BOTTOM;
     this.CHAT_H = this.CHAT_BOTTOM - this.CHAT_TOP;
     this.MSG_PADDING = 12;
 
@@ -60,6 +65,8 @@ class ChatScene {
 
     if (player && player.current_lover_id) {
       this.lover = config.getLoverById(player.current_lover_id);
+      // 加载恋人形象图片
+      this._loadLoverImage(player.current_lover_id);
     }
     this.progress = progress || { favor: 0, stage: 0, stage_round_count: 0, total_rounds: 0, events_triggered: [] };
     this.messages = dataManager.getMessages() || [];
@@ -107,7 +114,7 @@ class ChatScene {
   _setupLayout() {
     const w = this.w;
     const h = this.h;
-    const barY = h - this.INPUT_BAR_H;
+    const barY = h - this.INPUT_BAR_H - this.SAFE_AREA_BOTTOM;
 
     // 输入区域
     this.inputArea = { x: 12, y: barY + 8, w: w - 130, h: 40 };
@@ -115,8 +122,8 @@ class ChatScene {
     this.sendBtn = { x: w - 112, y: barY + 8, w: 50, h: 40 };
     // 广告按钮
     this.adBtn = { x: w - 56, y: barY + 8, w: 44, h: 40 };
-    // 菜单按钮（状态栏右上角）
-    this.menuBtn = { x: w - 40, y: 10, w: 30, h: 30 };
+    // 菜单按钮（状态栏右上角，考虑顶部安全区域）
+    this.menuBtn = { x: w - 40, y: 10 + this.SAFE_AREA_TOP, w: 30, h: 30 };
   }
 
   async _checkDailyLogin() {
@@ -316,6 +323,23 @@ class ChatScene {
     }
   }
 
+  /** 加载恋人形象图片 */
+  _loadLoverImage(loverId) {
+    const imagePath = `images/${loverId}_avatar.png`;
+    if (typeof tt !== 'undefined' && tt.createImage) {
+      const img = tt.createImage();
+      img.onload = () => {
+        this.loverImage = img;
+        this.render();
+      };
+      img.onerror = () => {
+        console.log('恋人形象图片加载失败:', imagePath);
+        this.loverImage = null;
+      };
+      img.src = imagePath;
+    }
+  }
+
   /** 观看广告 */
   async _watchAd() {
     try {
@@ -424,8 +448,35 @@ class ChatScene {
     ctx.fillStyle = '#F5F5F5';
     ctx.fillRect(0, 0, w, h);
 
-    // 恋人形象背景色
-    if (this.lover) {
+    // 恋人形象作为全屏背景
+    if (this.loverImage) {
+      // 绘制全屏背景图片
+      ctx.save();
+      ctx.globalAlpha = 0.3; // 设置透明度，避免影响聊天内容可读性
+      
+      // 计算图片缩放以填充屏幕
+      const imgAspect = this.loverImage.width / this.loverImage.height;
+      const screenAspect = w / h;
+      let drawW, drawH, drawX, drawY;
+      
+      if (imgAspect > screenAspect) {
+        // 图片更宽，以高度为准
+        drawH = h;
+        drawW = h * imgAspect;
+        drawX = (w - drawW) / 2;
+        drawY = 0;
+      } else {
+        // 图片更高，以宽度为准
+        drawW = w;
+        drawH = w / imgAspect;
+        drawX = 0;
+        drawY = (h - drawH) / 2;
+      }
+      
+      ctx.drawImage(this.loverImage, drawX, drawY, drawW, drawH);
+      ctx.restore();
+    } else if (this.lover) {
+      // 如果图片未加载，使用渐变背景色
       const bgGradient = ctx.createLinearGradient(0, 0, 0, h * 0.3);
       bgGradient.addColorStop(0, this.lover.bgColor || '#FFF5F7');
       bgGradient.addColorStop(1, '#F5F5F5');
@@ -555,7 +606,11 @@ class ChatScene {
     const stage = config.getStageByFavor(favor);
     const wordBalance = (player && player.word_balance) || 0;
 
-    UI.drawStatusBar(ctx, w, favor, stage.name, wordBalance);
+    // 添加顶部安全区域背景
+    ctx.fillStyle = config.THEME.white;
+    ctx.fillRect(0, 0, w, this.STATUS_BAR_H + this.SAFE_AREA_TOP);
+
+    UI.drawStatusBar(ctx, w, favor, stage.name, wordBalance, this.SAFE_AREA_TOP);
 
     // 菜单按钮
     ctx.fillStyle = config.THEME.textLight;
@@ -570,11 +625,11 @@ class ChatScene {
     const ctx = this.ctx;
     const w = this.w;
     const h = this.h;
-    const barY = h - this.INPUT_BAR_H;
+    const barY = h - this.INPUT_BAR_H - this.SAFE_AREA_BOTTOM;
 
     // 背景
     ctx.fillStyle = config.THEME.white;
-    ctx.fillRect(0, barY, w, this.INPUT_BAR_H);
+    ctx.fillRect(0, barY, w, this.INPUT_BAR_H + this.SAFE_AREA_BOTTOM);
     // 上边线
     ctx.strokeStyle = '#E0E0E0';
     ctx.lineWidth = 0.5;
