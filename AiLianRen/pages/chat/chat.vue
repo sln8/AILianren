@@ -236,6 +236,12 @@ import {
   shareForWords, getRemainingAdCount
 } from '@/utils/ad-manager.js'
 
+// 中文字符平均占用约3个token
+const CHINESE_CHAR_TOKEN_RATIO = 3
+// scroll-view滚动到底部的触发值（交替切换以强制触发滚动）
+const SCROLL_BOTTOM_A = 99999
+const SCROLL_BOTTOM_B = 100000
+
 export default {
   data() {
     return {
@@ -549,7 +555,7 @@ export default {
           data: {
             model: AI_CONFIG.MODEL,
             messages: messages,
-            max_tokens: maxWords * 3, // 中文字符约占3个token
+            max_tokens: maxWords * CHINESE_CHAR_TOKEN_RATIO,
             temperature: AI_CONFIG.TEMPERATURE,
             top_p: AI_CONFIG.TOP_P
           },
@@ -653,7 +659,7 @@ export default {
      */
     scrollToBottom() {
       this.$nextTick(() => {
-        this.scrollTop = this.scrollTop === 99999 ? 100000 : 99999
+        this.scrollTop = this.scrollTop === SCROLL_BOTTOM_A ? SCROLL_BOTTOM_B : SCROLL_BOTTOM_A
       })
     },
 
