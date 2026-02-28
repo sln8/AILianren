@@ -200,6 +200,13 @@ class ChatScene {
       tt.offKeyboardConfirm();
       tt.offKeyboardComplete();
 
+      // 清理监听器的函数
+      const cleanupListeners = () => {
+        tt.offKeyboardInput();
+        tt.offKeyboardConfirm();
+        tt.offKeyboardComplete();
+      };
+
       // 注册事件监听器（在显示键盘之前）
       tt.onKeyboardInput((res) => {
         this.inputText = res.value || '';
@@ -212,9 +219,7 @@ class ChatScene {
       });
 
       tt.onKeyboardComplete(() => {
-        tt.offKeyboardInput();
-        tt.offKeyboardConfirm();
-        tt.offKeyboardComplete();
+        cleanupListeners();
       });
 
       // 最后显示键盘
@@ -223,6 +228,10 @@ class ChatScene {
         maxLength: 500,
         confirmType: 'send',
         success: () => {},
+        fail: () => {
+          // 键盘显示失败时清理监听器
+          cleanupListeners();
+        },
       });
     }
   }
