@@ -1,7 +1,7 @@
 // Lover character data for the game
 
 // Female lovers (for male players)
-export const femalLovers = [
+export const femaleLovers = [
   {
     _id: 'F01',
     name: '苏晚晴',
@@ -170,11 +170,11 @@ export const maleLovers = [
 
 // Get lovers list by player gender
 export function getLoversByGender(playerGender) {
-  return playerGender === 'male' ? femalLovers : maleLovers
+  return playerGender === 'male' ? femaleLovers : maleLovers
 }
 
 // Get a specific lover by ID
 export function getLoverById(loverId) {
-  const allLovers = [...femalLovers, ...maleLovers]
+  const allLovers = [...femaleLovers, ...maleLovers]
   return allLovers.find(l => l._id === loverId)
 }
