@@ -1,24 +1,27 @@
 <template>
+	<!-- 默认首页 - 自动跳转到欢迎页 -->
 	<view class="content">
-		<image class="logo" src="/static/logo.png"></image>
-		<view class="text-area">
-			<text class="title">{{title}}</text>
-		</view>
+		<text class="title">正在加载...</text>
 	</view>
 </template>
 
 <script>
+	/**
+	 * 默认首页
+	 * 该页面仅作为备用入口，正常流程从welcome页面开始
+	 * onLoad时自动跳转到欢迎页
+	 */
 	export default {
 		data() {
 			return {
-				title: 'Hello'
+				title: '正在加载...'
 			}
 		},
 		onLoad() {
-
-		},
-		methods: {
-
+			// 自动跳转到欢迎页
+			uni.reLaunch({
+				url: '/pages/welcome/welcome'
+			})
 		}
 	}
 </script>
@@ -29,24 +32,12 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-	}
-
-	.logo {
-		height: 200rpx;
-		width: 200rpx;
-		margin-top: 200rpx;
-		margin-left: auto;
-		margin-right: auto;
-		margin-bottom: 50rpx;
-	}
-
-	.text-area {
-		display: flex;
-		justify-content: center;
+		min-height: 100vh;
+		background: #0a0a1a;
 	}
 
 	.title {
-		font-size: 36rpx;
-		color: #8f8f94;
+		font-size: 32rpx;
+		color: rgba(255, 255, 255, 0.5);
 	}
 </style>

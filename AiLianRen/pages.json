@@ -1,17 +1,62 @@
 {
-	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+	"pages": [
+		{
+			"path": "pages/welcome/welcome",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "",
+				"backgroundColor": "#0a0a1a",
+				"app-plus": {
+					"statusBarStyle": "light"
+				}
+			}
+		},
+		{
+			"path": "pages/select-lover/select-lover",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "",
+				"backgroundColor": "#0d1b3e",
+				"app-plus": {
+					"statusBarStyle": "light"
+				}
+			}
+		},
+		{
+			"path": "pages/chat/chat",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "",
+				"backgroundColor": "#0a0a1a",
+				"app-plus": {
+					"statusBarStyle": "light",
+					"softinputMode": "adjustResize"
+				}
+			}
+		},
+		{
+			"path": "pages/settings/settings",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "",
+				"backgroundColor": "#0d1b3e",
+				"app-plus": {
+					"statusBarStyle": "light"
+				}
+			}
+		},
 		{
 			"path": "pages/index/index",
 			"style": {
-				"navigationBarTitleText": "uni-app"
+				"navigationBarTitleText": "AI恋人"
 			}
 		}
 	],
 	"globalStyle": {
-		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "uni-app",
-		"navigationBarBackgroundColor": "#F8F8F8",
-		"backgroundColor": "#F8F8F8"
+		"navigationBarTextStyle": "white",
+		"navigationBarTitleText": "AI恋人",
+		"navigationBarBackgroundColor": "#0a0a1a",
+		"backgroundColor": "#0a0a1a"
 	},
 	"uniIdRouter": {}
 }

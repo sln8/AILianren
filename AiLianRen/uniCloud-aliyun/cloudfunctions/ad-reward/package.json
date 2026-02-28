@@ -1,0 +1,6 @@
+{
+  "name": "ad-reward",
+  "version": "1.0.0",
+  "main": "index.js",
+  "description": "AI恋人游戏 - 广告奖励发放云函数"
+}
