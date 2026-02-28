@@ -108,7 +108,7 @@ class ProfileScene {
     // 恋人头像和名字
     if (lover) {
       // 显示恋人形象图片
-      if (this.loverImage) {
+      if (this.loverImage && this.loverImage.width > 0 && this.loverImage.height > 0) {
         const imgSize = config.UI_LAYOUT.PROFILE_AVATAR_SIZE;
         const imgX = (w - imgSize) / 2;
         const imgY = y + config.UI_LAYOUT.PROFILE_AVATAR_TOP_OFFSET;

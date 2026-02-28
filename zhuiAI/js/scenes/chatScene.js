@@ -443,7 +443,7 @@ class ChatScene {
     ctx.fillRect(0, 0, w, h);
 
     // 恋人形象作为全屏背景
-    if (this.loverImage) {
+    if (this.loverImage && this.loverImage.width > 0 && this.loverImage.height > 0) {
       // 绘制全屏背景图片
       ctx.save();
       ctx.globalAlpha = config.UI_LAYOUT.CHAT_BACKGROUND_IMAGE_OPACITY;
