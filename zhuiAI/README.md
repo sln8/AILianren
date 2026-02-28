@@ -68,7 +68,7 @@ const AD_CONFIG = {
 ```javascript
 const AI_CONFIG = {
   API_ENDPOINT: 'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
-  MODEL_LITE: 'YOUR_DOUBAO_LITE_MODEL_ENDPOINT_ID',   // 替换为真实端点ID
+  MODEL_MINE: 'YOUR_DOUBAO_LITE_MODEL_ENDPOINT_ID',   // 替换为真实端点ID
   MODEL_PRO: 'YOUR_DOUBAO_PRO_MODEL_ENDPOINT_ID',     // 替换为真实端点ID
   API_KEY: 'YOUR_VOLC_API_KEY',                        // 替换为真实API Key
 };
