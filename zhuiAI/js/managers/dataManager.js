@@ -1,7 +1,7 @@
 /**
  * 数据管理器 - 负责与云函数通信和本地数据缓存
  */
-const config = require('./config');
+const config = require('../config');
 
 class DataManager {
   constructor() {

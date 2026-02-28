@@ -264,7 +264,7 @@ class ChatScene {
 
         // 插屏广告计数
         this.messageCountSinceAd++;
-        if (this.messageCountSinceAd >= 10) {
+        if (this.messageCountSinceAd >= config.WORD_ECONOMY.INTERSTITIAL_AD_INTERVAL) {
           this.messageCountSinceAd = 0;
           setTimeout(() => {
             adManager.showInterstitial();

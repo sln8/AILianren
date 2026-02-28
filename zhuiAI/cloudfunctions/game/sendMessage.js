@@ -75,8 +75,8 @@ module.exports = async function sendMessage(params, { openId, database, context 
   messages.push({ role: 'user', content: userMessage });
 
   // 判断是否使用高级模型（关键剧情节点）
-  const isKeyMoment = progress.stage_round_count >= 45 ||
-    (progress.favor >= currentStage.maxFavor - 20);
+  const isKeyMoment = progress.stage_round_count >= WORD_ECONOMY.KEY_MOMENT_ROUND_THRESHOLD ||
+    (progress.favor >= currentStage.maxFavor - WORD_ECONOMY.KEY_MOMENT_FAVOR_MARGIN);
   const model = isKeyMoment ? AI_CONFIG.MODEL_PRO : AI_CONFIG.MODEL_LITE;
 
   // 调用大模型API
@@ -138,7 +138,7 @@ module.exports = async function sendMessage(params, { openId, database, context 
   }
 
   // 阶段停留上限检查
-  if (newStageRoundCount >= 50 && !event) {
+  if (newStageRoundCount >= WORD_ECONOMY.STAGE_ROUND_LIMIT && !event) {
     event = 'crisis';
   }
 

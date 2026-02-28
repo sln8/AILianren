@@ -115,6 +115,7 @@ const WORD_ECONOMY = {
     7: 500,
   },
   SWITCH_LOVER_AD_COST: 3, // 更换恋人需看广告次数
+  INTERSTITIAL_AD_INTERVAL: 10, // 插屏广告触发间隔（对话轮次）
 };
 
 // ===== 广告ID配置（需替换为真实ID） =====

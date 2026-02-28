@@ -1,7 +1,7 @@
 /**
  * 广告管理器 - 管理激励视频广告、插屏广告、Banner广告
  */
-const config = require('./config');
+const config = require('../config');
 
 class AdManager {
   constructor() {

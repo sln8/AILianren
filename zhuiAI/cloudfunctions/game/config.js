@@ -45,6 +45,9 @@ const WORD_ECONOMY = {
   SHARE_REWARD: 200,
   LOGIN_BONUS: { 3: 100, 5: 200, 7: 500 },
   SWITCH_LOVER_AD_COST: 3,
+  STAGE_ROUND_LIMIT: 50,          // 每个阶段最多停留轮次
+  KEY_MOMENT_ROUND_THRESHOLD: 45, // 接近阶段上限时使用高级模型的轮次阈值
+  KEY_MOMENT_FAVOR_MARGIN: 20,    // 接近好感度上限时使用高级模型的好感度差值
 };
 
 // 大模型配置（需替换为真实值）
