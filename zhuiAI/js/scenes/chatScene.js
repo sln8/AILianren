@@ -146,8 +146,8 @@ class ChatScene {
     const dy = touch.clientY - this.lastTouchY;
     this.lastTouchY = touch.clientY;
 
-    // 在聊天区域内滚动
-    if (touch.clientY > this.STATUS_BAR_H && touch.clientY < this.CHAT_BOTTOM) {
+    // 在聊天区域内滚动（考虑安全区域）
+    if (touch.clientY > this.CHAT_TOP && touch.clientY < this.CHAT_BOTTOM) {
       this.scrollY = Math.max(0, Math.min(this.maxScrollY, this.scrollY - dy));
       this.render();
     }
@@ -504,13 +504,13 @@ class ChatScene {
     const ctx = this.ctx;
     const w = this.w;
 
-    // 裁剪区域
+    // 裁剪区域（考虑安全区域）
     ctx.save();
     ctx.beginPath();
-    ctx.rect(0, this.STATUS_BAR_H, w, this.CHAT_H);
+    ctx.rect(0, this.CHAT_TOP, w, this.CHAT_H);
     ctx.clip();
 
-    let y = this.STATUS_BAR_H + this.MSG_PADDING - this.scrollY;
+    let y = this.CHAT_TOP + this.MSG_PADDING - this.scrollY;
     const maxBubbleW = w * 0.65;
     const fontSize = 14;
     const padding = 10;
