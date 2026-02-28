@@ -31,7 +31,7 @@ class ProfileScene {
 
   /** 加载恋人形象图片 */
   _loadLoverImage(loverId) {
-    const imagePath = `images/${loverId}_avatar.png`;
+    const imagePath = config.ASSET_PATHS.LOVER_AVATAR(loverId);
     if (typeof tt !== 'undefined' && tt.createImage) {
       const img = tt.createImage();
       img.onload = () => {

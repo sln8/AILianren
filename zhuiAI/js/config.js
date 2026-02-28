@@ -182,6 +182,17 @@ const THEME = {
   overlay: 'rgba(0,0,0,0.5)', // 遮罩层
 };
 
+// ===== 安全区域配置 =====
+const SAFE_AREA = {
+  TOP: 44,      // 顶部安全区域（刘海屏/摄像头区域）
+  BOTTOM: 34,   // 底部安全区域（Home指示器区域）
+};
+
+// ===== 资源路径配置 =====
+const ASSET_PATHS = {
+  LOVER_AVATAR: (loverId) => `images/${loverId}_avatar.png`,  // 恋人头像路径模板
+};
+
 // ===== 工具函数 =====
 function getStageByFavor(favor) {
   for (let i = STAGES.length - 1; i >= 0; i--) {
@@ -201,6 +212,6 @@ function getLoversForGender(playerGender) {
 
 module.exports = {
   STAGES, MALE_LOVERS, FEMALE_LOVERS, WORD_ECONOMY, AD_CONFIG,
-  AI_CONFIG, ACHIEVEMENTS, EVENTS, THEME,
+  AI_CONFIG, ACHIEVEMENTS, EVENTS, THEME, SAFE_AREA, ASSET_PATHS,
   getStageByFavor, getLoverById, getLoversForGender,
 };

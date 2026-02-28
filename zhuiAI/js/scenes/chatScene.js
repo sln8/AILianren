@@ -27,9 +27,9 @@ class ChatScene {
     this.progress = null;
     this.loverImage = null; // 恋人形象图片
 
-    // 安全区域 - 防止摄像头阻挡
-    this.SAFE_AREA_TOP = 44;  // 顶部安全区域
-    this.SAFE_AREA_BOTTOM = 34; // 底部安全区域
+    // 安全区域 - 防止摄像头阻挡（从配置加载）
+    this.SAFE_AREA_TOP = config.SAFE_AREA.TOP;
+    this.SAFE_AREA_BOTTOM = config.SAFE_AREA.BOTTOM;
 
     // 布局常量 - 调整为包含安全区域
     this.STATUS_BAR_H = 60;
@@ -325,7 +325,7 @@ class ChatScene {
 
   /** 加载恋人形象图片 */
   _loadLoverImage(loverId) {
-    const imagePath = `images/${loverId}_avatar.png`;
+    const imagePath = config.ASSET_PATHS.LOVER_AVATAR(loverId);
     if (typeof tt !== 'undefined' && tt.createImage) {
       const img = tt.createImage();
       img.onload = () => {
