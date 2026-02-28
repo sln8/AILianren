@@ -538,7 +538,8 @@ export default {
 
     /**
      * 调用豆包大模型API
-     * 使用uni.request直接从客户端发起请求（小程序环境无Node.js fetch）
+     * ⚠️ 开发/测试阶段：客户端直接调用API
+     * 生产环境建议改为调用云函数(chat-send)以保护API Key
      * @param {Array} messages - 消息数组
      * @param {number} maxWords - 最大回复字数
      * @returns {Promise<string>} AI回复文本

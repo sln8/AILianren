@@ -3,6 +3,9 @@
  * 封装uni-app的本地存储API，用于管理游戏数据的本地缓存
  */
 
+// 本地缓存的最大消息条数（50轮对话 × 每轮2条 = 100条）
+const MAX_CACHED_MESSAGES = 100
+
 // 存储Key常量
 const STORAGE_KEYS = {
   USER_INFO: 'ailianren_user_info',         // 用户基本信息
@@ -71,8 +74,7 @@ export function getCurrentLover() {
  */
 export function saveChatHistory(loverId, messages) {
   try {
-    // 只缓存最近50轮对话（每轮含用户+AI共2条消息，共100条）
-    const trimmed = messages.slice(-100)
+    const trimmed = messages.slice(-MAX_CACHED_MESSAGES)
     const key = `${STORAGE_KEYS.CHAT_HISTORY}_${loverId}`
     uni.setStorageSync(key, JSON.stringify(trimmed))
   } catch (e) {

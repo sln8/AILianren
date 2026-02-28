@@ -23,9 +23,10 @@ const db = uniCloud.database()
 const dbCmd = db.command
 
 // ==================== 大模型API配置 ====================
-// 【上线前请替换为你的真实API Key】
+// 【上线前请设置uniCloud环境变量 DOUBAO_API_KEY】
+// 在uniCloud Web控制台 → 云函数 → 环境变量中配置
 const DOUBAO_API_URL = 'https://ml-api-cn-beijing.volces.com/api/v1/chat/completions'
-const DOUBAO_API_KEY = 'YOUR_DOUBAO_API_KEY_HERE'
+const DOUBAO_API_KEY = process.env.DOUBAO_API_KEY || 'YOUR_DOUBAO_API_KEY_HERE'
 const DOUBAO_MODEL = 'doubao-seed-2-0-mini-260215'
 
 exports.main = async (event, context) => {

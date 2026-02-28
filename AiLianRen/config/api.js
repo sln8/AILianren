@@ -2,6 +2,11 @@
  * API配置文件
  * 包含大模型API地址、广告位ID等关键配置
  * 上线前只需替换这里的ID和Key即可
+ * 
+ * ⚠️ 安全提示：
+ * 生产环境建议将AI API调用迁移到云函数(chat-send)中，
+ * 避免API Key暴露在客户端代码中。
+ * 客户端直接调用仅用于开发测试阶段。
  */
 
 // ==================== 大模型API配置 ====================
@@ -10,6 +15,7 @@ export const AI_CONFIG = {
   // API请求地址（火山引擎）
   API_URL: 'https://ml-api-cn-beijing.volces.com/api/v1/chat/completions',
   // API密钥 - 【上线前请替换为你的真实API Key】
+  // ⚠️ 生产环境应通过云函数调用，不要在客户端暴露Key
   API_KEY: 'YOUR_DOUBAO_API_KEY_HERE',
   // 模型名称
   MODEL: 'doubao-seed-2-0-mini-260215',

@@ -6,6 +6,9 @@
 import { STAGES, EVENTS, getConfessionSuccessRate, getProposalSuccessRate, checkDeathEvent } from '@/config/stages.js'
 import { GAME_CONFIG } from '@/config/api.js'
 
+// AI回复解析失败时的回退截取长度（字符数）
+const MAX_FALLBACK_REPLY_LENGTH = 200
+
 /**
  * 检查阶段是否可以推进
  * @param {Object} loverData - 恋人数据
@@ -263,7 +266,7 @@ export function parseAiResponse(aiResponse) {
 
     // 如果解析失败，将整个内容作为回复
     return {
-      reply: aiResponse.substring(0, 200),
+      reply: aiResponse.substring(0, MAX_FALLBACK_REPLY_LENGTH),
       emotion: 'neutral',
       favor_change: 1,
       intimacy_change: 0,
