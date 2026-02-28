@@ -538,34 +538,27 @@ export default {
 
     /**
      * 调用豆包大模型API
-     * ⚠️ 开发/测试阶段：客户端直接调用API
-     * 生产环境建议改为调用云函数(chat-send)以保护API Key
+     * 通过云函数(ai-proxy)转发请求，避免域名限制和API Key暴露
      * @param {Array} messages - 消息数组
      * @param {number} maxWords - 最大回复字数
      * @returns {Promise<string>} AI回复文本
      */
     callAiApi(messages, maxWords) {
       return new Promise((resolve, reject) => {
-        uni.request({
-          url: AI_CONFIG.API_URL,
-          method: 'POST',
-          header: {
-            'Authorization': `Bearer ${AI_CONFIG.API_KEY}`,
-            'Content-Type': 'application/json'
-          },
+        uniCloud.callFunction({
+          name: 'ai-proxy',
           data: {
-            model: AI_CONFIG.MODEL,
             messages: messages,
-            max_tokens: maxWords * CHINESE_CHAR_TOKEN_RATIO,
+            maxTokens: maxWords * CHINESE_CHAR_TOKEN_RATIO,
             temperature: AI_CONFIG.TEMPERATURE,
             top_p: AI_CONFIG.TOP_P
           },
           success: (res) => {
-            if (res.statusCode === 200 && res.data && res.data.choices && res.data.choices.length > 0) {
-              resolve(res.data.choices[0].message.content)
+            if (res.result && res.result.code === 0) {
+              resolve(res.result.reply)
             } else {
               console.error('AI API返回异常:', res)
-              reject(new Error('AI服务暂时不可用'))
+              reject(new Error(res.result ? res.result.msg : 'AI服务暂时不可用'))
             }
           },
           fail: (err) => {
