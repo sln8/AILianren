@@ -156,7 +156,7 @@ class ProfileScene {
         ctx.font = `12px "PingFang SC", "Microsoft YaHei", sans-serif`;
         ctx.fillText(lover.tag, w / 2, imgY + imgSize + config.UI_LAYOUT.PROFILE_TAG_OFFSET_Y);
         
-        y += imgSize + 50;
+        y += imgSize + config.UI_LAYOUT.PROFILE_AVATAR_BOTTOM_MARGIN;
       } else {
         // 如果图片未加载，使用默认头像
         UI.drawAvatar(ctx, w / 2, y + 30, 30, lover.name, config.THEME.white);

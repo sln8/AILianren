@@ -118,7 +118,7 @@ class ChatScene {
     this.sendBtn = { x: w - 112, y: barY + 8, w: 50, h: 40 };
     // 广告按钮
     this.adBtn = { x: w - 56, y: barY + 8, w: 44, h: 40 };
-    // 菜单按钮（状态栏右上角，考虑顶部安全区域）
+    // 菜单按钮（状态栏右上角）
     this.menuBtn = { x: w - 40, y: 10 + config.SAFE_AREA.TOP, w: 30, h: 30 };
   }
 
@@ -615,7 +615,7 @@ class ChatScene {
     const ctx = this.ctx;
     const w = this.w;
     const h = this.h;
-    const barY = h - this.INPUT_BAR_H - config.SAFE_AREA.BOTTOM;
+    const barY = this.CHAT_BOTTOM;
 
     // 背景（包含底部安全区域）
     ctx.fillStyle = config.THEME.white;

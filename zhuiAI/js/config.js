@@ -195,12 +195,13 @@ const ASSET_PATHS = {
 
 // ===== UI布局常量 =====
 const UI_LAYOUT = {
-  PROFILE_AVATAR_SIZE: 120,           // 个人中心头像尺寸
-  PROFILE_AVATAR_BORDER_WIDTH: 3,     // 个人中心头像边框宽度
-  PROFILE_AVATAR_TOP_OFFSET: 10,      // 个人中心头像顶部偏移
-  PROFILE_NAME_OFFSET_Y: 20,          // 个人中心名字相对头像底部偏移
-  PROFILE_TAG_OFFSET_Y: 38,           // 个人中心标签相对头像底部偏移
-  CHAT_BACKGROUND_IMAGE_OPACITY: 0.3, // 聊天背景图片透明度
+  PROFILE_AVATAR_SIZE: 120,             // 个人中心头像尺寸
+  PROFILE_AVATAR_BORDER_WIDTH: 3,       // 个人中心头像边框宽度
+  PROFILE_AVATAR_TOP_OFFSET: 10,        // 个人中心头像顶部偏移
+  PROFILE_NAME_OFFSET_Y: 20,            // 个人中心名字相对头像底部偏移
+  PROFILE_TAG_OFFSET_Y: 38,             // 个人中心标签相对头像底部偏移
+  PROFILE_AVATAR_BOTTOM_MARGIN: 50,     // 个人中心头像区域底部间距
+  CHAT_BACKGROUND_IMAGE_OPACITY: 0.3,   // 聊天背景图片透明度
 };
 
 // ===== 工具函数 =====
