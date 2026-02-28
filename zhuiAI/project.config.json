@@ -10,7 +10,7 @@
         "nativeCompile": true
     },
     "appid": "tte41a92a77a7a385402",
-    "projectname": "AIlianren",
+    "projectname": "zhuiAI",
     "douyinProjectType": "native",
     "cloudfunctionRoot": "cloudfunctions/"
 }
