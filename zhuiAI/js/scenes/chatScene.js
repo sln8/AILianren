@@ -195,13 +195,17 @@ class ChatScene {
   /** 调起键盘 */
   _showKeyboard() {
     if (typeof tt.showKeyboard === 'function') {
-      tt.showKeyboard({
-        defaultValue: this.inputText,
-        maxLength: 500,
-        confirmType: 'send',
-        success: () => {},
-      });
+      // 清理监听器的函数
+      const cleanupListeners = () => {
+        tt.offKeyboardInput();
+        tt.offKeyboardConfirm();
+        tt.offKeyboardComplete();
+      };
 
+      // 先清理旧的事件监听器
+      cleanupListeners();
+
+      // 注册事件监听器（在显示键盘之前）
       tt.onKeyboardInput((res) => {
         this.inputText = res.value || '';
         this.render();
@@ -213,9 +217,19 @@ class ChatScene {
       });
 
       tt.onKeyboardComplete(() => {
-        tt.offKeyboardInput();
-        tt.offKeyboardConfirm();
-        tt.offKeyboardComplete();
+        cleanupListeners();
+      });
+
+      // 最后显示键盘
+      tt.showKeyboard({
+        defaultValue: this.inputText,
+        maxLength: 500,
+        confirmType: 'send',
+        success: () => {},
+        fail: () => {
+          // 键盘显示失败时清理监听器
+          cleanupListeners();
+        },
       });
     }
   }
