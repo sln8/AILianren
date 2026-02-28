@@ -128,9 +128,9 @@ const AD_CONFIG = {
 // ===== 大模型API配置（需替换为真实配置） =====
 const AI_CONFIG = {
   API_ENDPOINT: 'https://ark.cn-beijing.volces.com/api/v3/chat/completions',  // 火山方舟API地址
-  MODEL_LITE: 'YOUR_DOUBAO_LITE_MODEL_ENDPOINT_ID',       // 替换为真实的doubao-lite端点ID
+  MODEL_LITE: 'doubao-seed-2-0-lite-260215',       // 替换为真实的doubao-lite端点ID
   MODEL_PRO: 'YOUR_DOUBAO_PRO_MODEL_ENDPOINT_ID',         // 替换为真实的doubao-pro端点ID
-  API_KEY: 'YOUR_VOLC_API_KEY',                            // 替换为真实的API Key
+  API_KEY: 'ece09713-f842-42e3-a4bb-1ebf7a143a79',                            // 替换为真实的API Key
   MAX_CONTEXT_ROUNDS: 20,                                   // 上下文保留轮次
 };
 
