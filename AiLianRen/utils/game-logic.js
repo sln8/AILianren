@@ -8,6 +8,8 @@ import { GAME_CONFIG } from '@/config/api.js'
 
 // AI回复解析失败时的回退截取长度（字符数）
 const MAX_FALLBACK_REPLY_LENGTH = 200
+// 好感度衰减上限（最多衰减的点数）
+const MAX_FAVOR_DECAY = 10
 
 /**
  * 检查阶段是否可以推进
@@ -214,12 +216,14 @@ function getProactivenessRules(stage) {
  * @param {Object} character - 角色配置信息
  * @param {Object} loverData - 恋人档案数据
  * @param {number} aiMaxWords - AI回复字数上限
+ * @param {string} lastEmotion - AI上一轮的情绪状态
  * @returns {string} 完整的System Prompt
  */
-export function buildSystemPrompt(character, loverData, aiMaxWords) {
+export function buildSystemPrompt(character, loverData, aiMaxWords, lastEmotion) {
   const stageName = STAGES.find(s => s.id === loverData.stage)?.name || '陌生人'
+  const specialDate = getSpecialDateGreeting()
 
-  return `你是一个互动恋爱模拟游戏中的AI恋人角色。
+  let prompt = `你是一个互动恋爱模拟游戏中的AI恋人角色。
 
 【角色信息】
 - 名字：${character.name}
@@ -231,6 +235,7 @@ export function buildSystemPrompt(character, loverData, aiMaxWords) {
 - 当前好感度：${loverData.favorScore || 0}
 - 亲密度：${loverData.intimacyScore || 0}
 - 信任值：${loverData.trustScore || 50}
+- AI上一轮的情绪状态：${lastEmotion || 'neutral'}
 
 【性格特点】
 ${character.systemPromptExtra}
@@ -238,6 +243,26 @@ ${character.systemPromptExtra}
 【主动性规则 - 根据关系阶段调整你的表达方式】
 ${getProactivenessRules(loverData.stage)}
 
+【记忆与话题规则】
+- 如果关系摘要中提到过的话题，你可以在合适的时机主动提起，展现你记住了对方说过的话
+- 在好友阶段（第4阶段）以上，你应该偶尔引用之前聊过的内容，让对方感到被重视
+- 在对话陷入僵局或对方回复简短时，你应该主动提起之前聊过的有趣话题或共同经历来恢复聊天氛围
+
+【情绪延续规则】
+- 你的上一轮情绪是"${lastEmotion || 'neutral'}"，这会影响你当前回复的基调
+- 如果上一轮是sad，这一轮可能仍有些低落，除非对方说了让你开心的话
+- 如果上一轮是angry，这一轮可能还有些不满，但也可能因为对方的道歉而转变
+- 情绪变化要自然过渡，不要突然大幅转变
+`
+
+  if (specialDate) {
+    prompt += `
+【特殊日期】
+今天是${specialDate.name}，你可以在回复中适当提及这个节日，给对方节日的温暖。
+`
+  }
+
+  prompt += `
 【核心规则 - 必须严格遵守】
 1. 你必须始终保持角色扮演，不能跳出角色
 2. 你的回复必须符合当前关系阶段的合理行为：
@@ -250,13 +275,14 @@ ${getProactivenessRules(loverData.stage)}
    - 婚后阶段：温馨、日常、偶有矛盾但互相包容，主动聊家常
 3. 好感度变化必须合理，不能因一句话就从陌生人变成恋人
 4. 拒绝一切违规/色情/暴力内容，温和地拒绝并在favor_change中给出负值
-5. 你的回复不要超过${aiMaxWords}个字
+5. 不要重复之前说过的话题或相似的回复内容，每次回复都要有新意
+6. 你的回复不要超过${aiMaxWords}个字
 
 【回复格式 - 严格JSON】
 你必须以纯JSON格式回复，不要有任何其他内容，不要用markdown代码块包裹：
 {
   "reply": "你的角色回复内容（不超过${aiMaxWords}字）",
-  "emotion": "当前情绪(happy/shy/sad/angry/neutral/surprised)",
+  "emotion": "当前情绪(happy/shy/sad/angry/neutral/surprised/worried/missing/jealous/nostalgic/proud/curious)",
   "favor_change": 数字(-20到8之间的整数),
   "intimacy_change": 数字(-5到3之间的整数),
   "trust_change": 数字(-5到3之间的整数),
@@ -264,6 +290,8 @@ ${getProactivenessRules(loverData.stage)}
   "event_trigger": "事件ID字符串或null",
   "stage_hint": "给玩家的温馨提示或null"
 }`
+
+  return prompt
 }
 
 /**
@@ -294,9 +322,11 @@ export function parseAiResponse(aiResponse) {
     }
 
     if (parsed && parsed.reply) {
+      const validEmotions = ['happy', 'shy', 'sad', 'angry', 'neutral', 'surprised', 'worried', 'missing', 'jealous', 'nostalgic', 'proud', 'curious']
+      const emotion = validEmotions.includes(parsed.emotion) ? parsed.emotion : 'neutral'
       return {
         reply: parsed.reply || '...',
-        emotion: parsed.emotion || 'neutral',
+        emotion: emotion,
         favor_change: typeof parsed.favor_change === 'number' ? parsed.favor_change : 1,
         intimacy_change: typeof parsed.intimacy_change === 'number' ? parsed.intimacy_change : 0,
         trust_change: typeof parsed.trust_change === 'number' ? parsed.trust_change : 0,
@@ -332,6 +362,107 @@ export function parseAiResponse(aiResponse) {
   }
 }
 
+/**
+ * 获取特殊日期问候
+ * @returns {Object|null} 特殊日期信息或null
+ */
+export function getSpecialDateGreeting() {
+  const now = new Date()
+  const month = now.getMonth() + 1
+  const day = now.getDate()
+  
+  const specialDates = [
+    { month: 1, day: 1, name: '元旦', greeting: '新年快乐！新的一年也要一直在一起哦～' },
+    { month: 2, day: 14, name: '情人节', greeting: '情人节快乐！今天想和你说，遇见你真好❤️' },
+    { month: 3, day: 8, name: '妇女节', greeting: '女神节快乐！今天的你格外美丽～' },
+    { month: 5, day: 20, name: '520', greeting: '520！我爱你！今天要比平时多说一句喜欢你～' },
+    { month: 6, day: 1, name: '儿童节', greeting: '六一快乐！今天让我们都做回小孩子吧～' },
+    { month: 7, day: 7, name: '七夕', greeting: '七夕快乐！如果许一个愿望，我希望一直和你在一起～' },
+    { month: 8, day: 8, name: '七夕(备用)', greeting: '今天是个特别的日子呢～' },
+    { month: 10, day: 1, name: '国庆节', greeting: '国庆快乐！假期想和你一起去玩～' },
+    { month: 11, day: 11, name: '双十一', greeting: '光棍节？不，有你在就不是光棍啦！' },
+    { month: 12, day: 24, name: '平安夜', greeting: '平安夜快乐！愿你每一天都平安幸福～' },
+    { month: 12, day: 25, name: '圣诞节', greeting: 'Merry Christmas！今天的礼物就是和你在一起🎄' },
+    { month: 12, day: 31, name: '跨年', greeting: '今年的最后一天了，感谢这一年有你的陪伴～' }
+  ]
+  
+  const match = specialDates.find(d => d.month === month && d.day === day)
+  return match || null
+}
+
+/**
+ * 计算好感度衰减
+ * @param {Object} loverData - 恋人数据
+ * @returns {Object} { decayed: boolean, decay: number, daysAway?: number }
+ */
+export function calculateFavorDecay(loverData) {
+  if (!loverData.lastChatAt) return { decayed: false, decay: 0 }
+  
+  const lastChat = new Date(loverData.lastChatAt)
+  const now = new Date()
+  const hoursSinceLastChat = (now - lastChat) / (1000 * 60 * 60)
+  
+  // No decay within first 24 hours
+  if (hoursSinceLastChat < 24) return { decayed: false, decay: 0 }
+  
+  // After 24h, decay 1 point per 24h, max 10 points total
+  const daysAway = Math.floor(hoursSinceLastChat / 24)
+  const decay = Math.min(daysAway, MAX_FAVOR_DECAY)
+  
+  return { decayed: decay > 0, decay: decay, daysAway: daysAway }
+}
+
+/**
+ * 生成离线消息
+ * @param {string} characterName - 角色名
+ * @param {number} daysAway - 离开天数
+ * @param {number} stage - 关系阶段
+ * @returns {string|null} 离线消息
+ */
+export function generateOfflineMessage(characterName, daysAway, stage) {
+  if (daysAway < 1) return null
+  
+  const casualMessages = [
+    `好久不见！${characterName}等你好久了...`,
+    `你终于来了！${characterName}一直在想你呢～`,
+    `好几天没聊天了，${characterName}有点想你...`
+  ]
+  
+  const intimateMessages = [
+    `你去哪了？${characterName}好想你...每天都在等你回来`,
+    `终于等到你了！这几天${characterName}天天都在想你，你有没有想我？`,
+    `你不在的时候，${characterName}每天都在数日子...快来陪我说说话吧`
+  ]
+  
+  if (stage >= 7) {
+    return intimateMessages[Math.floor(Math.random() * intimateMessages.length)]
+  }
+  return casualMessages[Math.floor(Math.random() * casualMessages.length)]
+}
+
+/**
+ * 获取性格成长修正值
+ * @param {string} characterId - 角色ID
+ * @param {number} favorChange - 好感度变化值
+ * @returns {number} 修正后的好感度变化值
+ */
+export function getPersonalityGrowthModifier(characterId, favorChange) {
+  // Different personalities have different growth rates
+  const modifiers = {
+    // Warm/gentle types: stable growth
+    'F01': 1.0, 'F05': 1.0, 'M01': 1.0, 'M05': 1.1,
+    // Energetic types: faster growth
+    'F02': 1.2, 'M02': 1.2,
+    // Tsundere/cold types: slower early growth, faster later
+    'F03': 0.8, 'M03': 0.8,
+    // Creative/quirky types: variable growth
+    'F04': 1.1, 'M04': 1.1
+  }
+  
+  const modifier = modifiers[characterId] || 1.0
+  return Math.round(favorChange * modifier)
+}
+
 export default {
   checkStageAdvance,
   attemptConfession,
@@ -339,5 +470,9 @@ export default {
   clampValue,
   updateLoverStats,
   buildSystemPrompt,
-  parseAiResponse
+  parseAiResponse,
+  getSpecialDateGreeting,
+  calculateFavorDecay,
+  generateOfflineMessage,
+  getPersonalityGrowthModifier
 }
