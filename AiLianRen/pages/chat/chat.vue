@@ -1,6 +1,6 @@
 <template>
   <!-- 主对话页面 - 游戏核心玩法 -->
-  <view class="chat-page">
+  <view class="chat-page" :class="{ 'night-mode': isNightMode }">
     <!-- 背景：AI恋人形象 -->
     <view class="bg-avatar-wrapper">
       <image
@@ -65,7 +65,10 @@
         >
           <!-- AI消息 -->
           <view v-if="msg.role === 'assistant'" class="msg-bubble ai-bubble">
-            <text class="msg-name">{{ currentCharacter ? currentCharacter.name : '' }}</text>
+            <view class="ai-name-row">
+              <text class="msg-name">{{ currentCharacter ? currentCharacter.name : '' }}</text>
+              <text v-if="msg.emotion && msg.emotion !== 'neutral'" class="emotion-indicator">{{ getEmotionEmoji(msg.emotion) }}</text>
+            </view>
             <text class="msg-text">{{ msg.displayText || msg.content }}</text>
           </view>
           <!-- 玩家消息 -->
@@ -99,6 +102,10 @@
         <view class="action-btn" @tap="showDiary">
           <text class="action-icon">📖</text>
           <text class="action-label">恋人日记</text>
+        </view>
+        <view class="action-btn" @tap="showTimeline = true">
+          <text class="action-icon">📅</text>
+          <text class="action-label">时间线</text>
         </view>
         <view class="action-btn" @tap="goSettings">
           <text class="action-icon">⚙️</text>
@@ -203,6 +210,51 @@
         </view>
       </view>
     </view>
+
+    <!-- 新手引导弹窗 -->
+    <view v-if="showGuide" class="modal-overlay" @tap="closeGuide">
+      <view class="modal-card guide-modal" @tap.stop>
+        <text class="guide-emoji">👋</text>
+        <text class="modal-title">欢迎来到AI恋人！</text>
+        <text class="modal-desc">试着跟TA打个招呼吧～\n输入你想说的话，点击发送开始对话</text>
+        <view class="guide-tips">
+          <text class="guide-tip">💡 每次对话会消耗字数</text>
+          <text class="guide-tip">❤️ 好感度会随对话变化</text>
+          <text class="guide-tip">🎯 努力提升关系阶段吧</text>
+        </view>
+        <view class="modal-btn primary" @tap="closeGuide">
+          <text class="modal-btn-text">开始聊天 💬</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 特殊日期横幅 -->
+    <view v-if="specialDateInfo" class="special-date-banner">
+      <text class="special-date-text">🎉 今天是{{ specialDateInfo.name }}！</text>
+    </view>
+
+    <!-- 时间线弹窗 -->
+    <view v-if="showTimeline" class="modal-overlay" @tap="showTimeline = false">
+      <view class="modal-card timeline-modal" @tap.stop>
+        <text class="modal-title">📅 我们的故事</text>
+        <scroll-view class="timeline-content" scroll-y>
+          <view v-for="(event, index) in getTimelineEvents()" :key="index" class="timeline-item">
+            <view class="timeline-dot"></view>
+            <view class="timeline-line" v-if="index < getTimelineEvents().length - 1"></view>
+            <view class="timeline-info">
+              <text class="timeline-icon">{{ event.icon }}</text>
+              <text class="timeline-title">{{ event.title }}</text>
+            </view>
+          </view>
+          <view v-if="getTimelineEvents().length === 0" class="timeline-empty">
+            <text class="timeline-empty-text">还没有故事发生，继续聊天吧～</text>
+          </view>
+        </scroll-view>
+        <view class="modal-close" @tap="showTimeline = false">
+          <text class="modal-close-text">关闭</text>
+        </view>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -229,7 +281,9 @@ import {
 import {
   buildSystemPrompt, parseAiResponse,
   updateLoverStats, checkStageAdvance,
-  attemptConfession, attemptProposal
+  attemptConfession, attemptProposal,
+  calculateFavorDecay, generateOfflineMessage,
+  getSpecialDateGreeting
 } from '@/utils/game-logic.js'
 import {
   showRewardedVideoAd, showInterstitialAd,
@@ -272,7 +326,17 @@ export default {
 
       // ===== 配置 =====
       adDailyLimit: AD_CONFIG.DAILY_AD_LIMIT, // 每日广告观看上限
-      settings: {}               // 游戏设置（打字效果开关等）
+      settings: {},               // 游戏设置（打字效果开关等）
+      // ===== 新手引导 =====
+      showGuide: false,          // 是否显示新手引导
+      // ===== 表情系统 =====
+      currentEmotion: 'neutral', // AI当前情绪状态
+      // ===== 日夜模式 =====
+      isNightMode: false,        // 是否为夜间模式
+      // ===== 时间线 =====
+      showTimeline: false,       // 是否显示时间线弹窗
+      // ===== 特殊日期 =====
+      specialDateInfo: null      // 今日特殊日期信息
     }
   },
 
@@ -305,6 +369,10 @@ export default {
   onLoad() {
     // 页面首次加载时初始化所有数据
     this.initPage()
+    // 检查日夜模式
+    this.checkDayNightMode()
+    // 检查特殊日期
+    this.specialDateInfo = getSpecialDateGreeting()
   },
 
   onShow() {
@@ -356,6 +424,12 @@ export default {
       this.$nextTick(() => {
         this.scrollToBottom()
       })
+      // 检查新手引导
+      this.checkAndShowGuide()
+      // 检查离线状态
+      this.checkOfflineStatus()
+      // 检查特殊日期
+      this.checkSpecialDate()
     },
 
     /**
@@ -433,7 +507,7 @@ export default {
         // 根据当前阶段获取AI最大回复字数
         const aiMaxWords = getAiMaxWords(this.loverData.stage)
         // 构建系统提示词（包含角色设定、关系状态、回复格式要求）
-        const systemPrompt = buildSystemPrompt(this.currentCharacter, this.loverData, aiMaxWords)
+        const systemPrompt = buildSystemPrompt(this.currentCharacter, this.loverData, aiMaxWords, this.currentEmotion)
 
         // 构建上下文消息数组（系统提示 + 最近对话 + 当前消息）
         const contextMessages = this.buildContextMessages(systemPrompt, message)
@@ -443,6 +517,9 @@ export default {
 
         // 解析AI回复（提取文本、情绪、好感度变化等结构化数据）
         const aiResult = parseAiResponse(aiResponseText)
+
+        // 更新当前情绪状态
+        this.currentEmotion = aiResult.emotion
 
         // 计算并扣除AI回复的字数消耗
         const aiWordCount = aiResult.reply.length
@@ -463,6 +540,7 @@ export default {
 
         // 更新恋人档案数值（好感度、对话轮数等）
         this.loverData = updateLoverStats(this.loverData, aiResult)
+        // 注意：性格成长修正已在云函数(chat-send)中统一应用，客户端不重复处理
         this.loverData.totalWordsConsumed = (this.loverData.totalWordsConsumed || 0) + msgWordCount + aiWordCount
         this.loverData.lastChatAt = new Date().toISOString()
 
@@ -886,6 +964,164 @@ export default {
         20: `再见了...感谢你给了我最美好的一生。不要太难过，带着我的爱，好好生活。`
       }
       return diaries[lover.stage] || `今天是和${this.userInfo.nickname}在一起的第${lover.daysTogether}天，心里暖暖的。`
+    },
+
+    // ==================== 新手引导 ====================
+
+    /**
+     * 检查并显示新手引导
+     */
+    checkAndShowGuide() {
+      const guideShown = uni.getStorageSync('ailianren_guide_shown')
+      if (!guideShown && this.messages.length === 0) {
+        this.showGuide = true
+        uni.setStorageSync('ailianren_guide_shown', true)
+      }
+    },
+
+    /**
+     * 关闭新手引导
+     */
+    closeGuide() {
+      this.showGuide = false
+    },
+
+    // ==================== 日夜模式 ====================
+
+    /**
+     * 检查当前时间并设置日夜模式（19:00-06:00为夜间）
+     */
+    checkDayNightMode() {
+      const NIGHT_START = 19
+      const NIGHT_END = 6
+      const hour = new Date().getHours()
+      this.isNightMode = hour >= NIGHT_START || hour < NIGHT_END
+    },
+
+    // ==================== 离线消息与好感度衰减 ====================
+
+    /**
+     * 检查离线状态并处理好感度衰减和离线消息
+     */
+    checkOfflineStatus() {
+      if (!this.loverData || !this.loverData.lastChatAt) return
+
+      const decayResult = calculateFavorDecay(this.loverData)
+
+      if (decayResult.decayed && decayResult.decay > 0) {
+        // 应用好感度衰减
+        this.loverData.favorScore = Math.max(0, (this.loverData.favorScore || 0) - decayResult.decay)
+        saveCurrentLover(this.loverData)
+
+        uni.showToast({
+          title: `好久不见，好感度-${decayResult.decay}`,
+          icon: 'none',
+          duration: 2000
+        })
+      }
+
+      // 生成离线消息
+      if (decayResult.daysAway >= 1 && this.currentCharacter) {
+        const offlineMsg = generateOfflineMessage(
+          this.currentCharacter.name,
+          decayResult.daysAway,
+          this.loverData.stage
+        )
+        if (offlineMsg) {
+          setTimeout(() => {
+            this.addAiMessage(offlineMsg, 'missing')
+            this.currentEmotion = 'missing'
+          }, 500)
+        }
+      }
+    },
+
+    // ==================== 特殊日期 ====================
+
+    /**
+     * 检查并显示特殊日期问候
+     */
+    checkSpecialDate() {
+      if (!this.specialDateInfo || !this.currentCharacter) return
+
+      const todayKey = `special_date_${new Date().toISOString().split('T')[0]}`
+      const alreadyShown = uni.getStorageSync(todayKey)
+      if (alreadyShown) return
+
+      uni.setStorageSync(todayKey, true)
+      setTimeout(() => {
+        this.addAiMessage(
+          `${this.specialDateInfo.greeting}`,
+          'happy'
+        )
+        this.currentEmotion = 'happy'
+      }, 1000)
+    },
+
+    // ==================== 时间线 ====================
+
+    /**
+     * 获取关系时间线事件
+     */
+    getTimelineEvents() {
+      const events = []
+      const completed = this.loverData.eventsCompleted || []
+      
+      if (this.loverData.createdAt) {
+        events.push({
+          date: this.loverData.createdAt,
+          title: '初次相遇',
+          icon: '🌟'
+        })
+      }
+      
+      if (completed.includes('EVT002')) {
+        events.push({ title: '交换联系方式', icon: '📱' })
+      }
+      if (completed.includes('EVT003')) {
+        events.push({ title: '第一次一起吃饭', icon: '🍽️' })
+      }
+      if (completed.includes('EVT006')) {
+        events.push({ title: '月光下的告白', icon: '💕' })
+      }
+      if (completed.includes('EVT007')) {
+        events.push({ title: '第一次约会', icon: '🎬' })
+      }
+      if (completed.includes('EVT012')) {
+        events.push({ title: '浪漫求婚', icon: '💍' })
+      }
+      if (completed.includes('EVT013')) {
+        events.push({ title: '婚礼进行曲', icon: '👰' })
+      }
+      if (completed.includes('EVT015')) {
+        events.push({ title: '新生命降临', icon: '👶' })
+      }
+      if (completed.includes('EVT020')) {
+        events.push({ title: '金婚典礼', icon: '🏆' })
+      }
+      
+      return events
+    },
+
+    /**
+     * 获取情绪对应的表情符号
+     */
+    getEmotionEmoji(emotion) {
+      const emojiMap = {
+        happy: '😊',
+        shy: '😳',
+        sad: '😢',
+        angry: '😤',
+        surprised: '😲',
+        worried: '😟',
+        missing: '🥺',
+        jealous: '😒',
+        nostalgic: '🥹',
+        proud: '😌',
+        curious: '🤔',
+        neutral: ''
+      }
+      return emojiMap[emotion] || ''
     },
 
     // ==================== 页面导航 ====================
@@ -1430,5 +1666,154 @@ export default {
   color: rgba(255, 255, 255, 0.5);
   display: block;
   margin-bottom: 8rpx;
+}
+
+/* ==================== 日夜模式 ==================== */
+.chat-page.night-mode .bg-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(5, 5, 20, 0.75) 0%,
+    rgba(5, 5, 20, 0.4) 30%,
+    rgba(5, 5, 20, 0.6) 60%,
+    rgba(5, 5, 20, 0.95) 100%
+  );
+}
+
+.chat-page.night-mode .status-bar {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.chat-page.night-mode .input-area {
+  background: rgba(0, 0, 0, 0.75);
+}
+
+/* ==================== 表情指示器 ==================== */
+.ai-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-bottom: 6rpx;
+}
+
+.emotion-indicator {
+  font-size: 24rpx;
+  animation: emotion-pop 0.3s ease-out;
+}
+
+@keyframes emotion-pop {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* ==================== 新手引导 ==================== */
+.guide-modal {
+  text-align: center;
+}
+
+.guide-emoji {
+  font-size: 80rpx;
+  margin-bottom: 16rpx;
+}
+
+.guide-tips {
+  width: 100%;
+  padding: 20rpx 24rpx;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.guide-tip {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.6);
+  display: block;
+  margin-bottom: 10rpx;
+  text-align: left;
+}
+
+.guide-tip:last-child {
+  margin-bottom: 0;
+}
+
+/* ==================== 特殊日期横幅 ==================== */
+.special-date-banner {
+  position: fixed;
+  top: 180rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  padding: 10rpx 30rpx;
+  background: linear-gradient(135deg, rgba(255, 107, 157, 0.3), rgba(192, 132, 252, 0.3));
+  backdrop-filter: blur(10rpx);
+  border-radius: 30rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.15);
+}
+
+.special-date-text {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ==================== 时间线 ==================== */
+.timeline-modal {
+  max-height: 70vh;
+}
+
+.timeline-content {
+  width: 100%;
+  max-height: 500rpx;
+  padding: 20rpx 0;
+}
+
+.timeline-item {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-left: 40rpx;
+  margin-bottom: 30rpx;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: 0;
+  width: 16rpx;
+  height: 16rpx;
+  background: linear-gradient(135deg, #ff6b9d, #c084fc);
+  border-radius: 50%;
+}
+
+.timeline-line {
+  position: absolute;
+  left: 7rpx;
+  top: 20rpx;
+  width: 2rpx;
+  height: 40rpx;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.timeline-info {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.timeline-icon {
+  font-size: 28rpx;
+}
+
+.timeline-title {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.timeline-empty {
+  padding: 40rpx;
+  text-align: center;
+}
+
+.timeline-empty-text {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.4);
 }
 </style>
