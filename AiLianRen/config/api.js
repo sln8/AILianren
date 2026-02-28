@@ -13,10 +13,10 @@
 // 火山引擎·豆包大模型 Doubao-Seed-2.0-mini
 export const AI_CONFIG = {
   // API请求地址（火山引擎）
-  API_URL: 'https://ml-api-cn-beijing.volces.com/api/v1/chat/completions',
+  API_URL: 'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
   // API密钥 - 【上线前请替换为你的真实API Key】
   // ⚠️ 生产环境应通过云函数调用，不要在客户端暴露Key
-  API_KEY: 'YOUR_DOUBAO_API_KEY_HERE',
+  API_KEY: 'd3d95f0e-717b-41cf-b08c-5ac1c23dac43',
   // 模型名称
   MODEL: 'doubao-seed-2-0-mini-260215',
   // 生成参数

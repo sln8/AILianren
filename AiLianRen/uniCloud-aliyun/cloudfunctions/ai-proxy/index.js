@@ -10,7 +10,7 @@
 
 // 【上线前请设置uniCloud环境变量 DOUBAO_API_KEY】
 // 在uniCloud Web控制台 → 云函数 → 环境变量中配置
-const DOUBAO_API_URL = 'https://ml-api-cn-beijing.volces.com/api/v1/chat/completions'
+const DOUBAO_API_URL = 'https://ark.cn-beijing.volces.com/api/v3/chat/completions'
 const DOUBAO_API_KEY = process.env.DOUBAO_API_KEY || 'd3d95f0e-717b-41cf-b08c-5ac1c23dac43'
 const DOUBAO_MODEL = 'doubao-seed-2-0-mini-260215'
 
