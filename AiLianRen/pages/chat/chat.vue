@@ -996,7 +996,7 @@ export default {
     // ==================== 日夜模式 ====================
 
     /**
-     * 检查当前时间并设置日夜模式
+     * 检查当前时间并设置日夜模式（19:00-06:00为夜间）
      */
     checkDayNightMode() {
       const hour = new Date().getHours()
