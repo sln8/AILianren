@@ -32,18 +32,16 @@ class ProfileScene {
   /** 加载恋人形象图片 */
   _loadLoverImage(loverId) {
     const imagePath = config.ASSET_PATHS.LOVER_AVATAR(loverId);
-    if (typeof tt !== 'undefined' && tt.createImage) {
-      const img = tt.createImage();
-      img.onload = () => {
+    UI.loadImage(
+      imagePath,
+      (img) => {
         this.loverImage = img;
         this.render();
-      };
-      img.onerror = () => {
-        console.log('恋人形象图片加载失败:', imagePath);
+      },
+      () => {
         this.loverImage = null;
-      };
-      img.src = imagePath;
-    }
+      }
+    );
   }
 
   onTouchStart(e) {
@@ -111,7 +109,7 @@ class ProfileScene {
     if (lover) {
       // 显示恋人形象图片
       if (this.loverImage) {
-        const imgSize = 120; // 图片显示尺寸
+        const imgSize = config.UI_LAYOUT.PROFILE_AVATAR_SIZE;
         const imgX = (w - imgSize) / 2;
         const imgY = y + 10;
         
@@ -145,7 +143,7 @@ class ProfileScene {
         
         // 绘制圆形边框
         ctx.strokeStyle = config.THEME.white;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = config.UI_LAYOUT.PROFILE_AVATAR_BORDER_WIDTH;
         ctx.beginPath();
         ctx.arc(w / 2, imgY + imgSize / 2, imgSize / 2, 0, Math.PI * 2);
         ctx.stroke();

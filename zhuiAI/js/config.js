@@ -193,6 +193,13 @@ const ASSET_PATHS = {
   LOVER_AVATAR: (loverId) => `images/${loverId}_avatar.png`,  // 恋人头像路径模板
 };
 
+// ===== UI布局常量 =====
+const UI_LAYOUT = {
+  PROFILE_AVATAR_SIZE: 120,           // 个人中心头像尺寸
+  PROFILE_AVATAR_BORDER_WIDTH: 3,     // 个人中心头像边框宽度
+  CHAT_BACKGROUND_IMAGE_OPACITY: 0.3, // 聊天背景图片透明度
+};
+
 // ===== 工具函数 =====
 function getStageByFavor(favor) {
   for (let i = STAGES.length - 1; i >= 0; i--) {
@@ -212,6 +219,6 @@ function getLoversForGender(playerGender) {
 
 module.exports = {
   STAGES, MALE_LOVERS, FEMALE_LOVERS, WORD_ECONOMY, AD_CONFIG,
-  AI_CONFIG, ACHIEVEMENTS, EVENTS, THEME, SAFE_AREA, ASSET_PATHS,
+  AI_CONFIG, ACHIEVEMENTS, EVENTS, THEME, SAFE_AREA, ASSET_PATHS, UI_LAYOUT,
   getStageByFavor, getLoverById, getLoversForGender,
 };

@@ -326,18 +326,16 @@ class ChatScene {
   /** 加载恋人形象图片 */
   _loadLoverImage(loverId) {
     const imagePath = config.ASSET_PATHS.LOVER_AVATAR(loverId);
-    if (typeof tt !== 'undefined' && tt.createImage) {
-      const img = tt.createImage();
-      img.onload = () => {
+    UI.loadImage(
+      imagePath,
+      (img) => {
         this.loverImage = img;
         this.render();
-      };
-      img.onerror = () => {
-        console.log('恋人形象图片加载失败:', imagePath);
+      },
+      () => {
         this.loverImage = null;
-      };
-      img.src = imagePath;
-    }
+      }
+    );
   }
 
   /** 观看广告 */
@@ -452,7 +450,7 @@ class ChatScene {
     if (this.loverImage) {
       // 绘制全屏背景图片
       ctx.save();
-      ctx.globalAlpha = 0.3; // 设置透明度，避免影响聊天内容可读性
+      ctx.globalAlpha = config.UI_LAYOUT.CHAT_BACKGROUND_IMAGE_OPACITY;
       
       // 计算图片缩放以填充屏幕
       const imgAspect = this.loverImage.width / this.loverImage.height;

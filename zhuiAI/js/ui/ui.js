@@ -248,6 +248,23 @@ const UI = {
     const dy = touch.clientY - cy;
     return dx * dx + dy * dy <= r * r;
   },
+
+  /** 加载图片（通用工具函数） */
+  loadImage(imagePath, onSuccess, onError) {
+    if (typeof tt !== 'undefined' && tt.createImage) {
+      const img = tt.createImage();
+      img.onload = () => {
+        if (onSuccess) onSuccess(img);
+      };
+      img.onerror = () => {
+        console.log('图片加载失败:', imagePath);
+        if (onError) onError();
+      };
+      img.src = imagePath;
+      return img;
+    }
+    return null;
+  },
 };
 
 module.exports = UI;
