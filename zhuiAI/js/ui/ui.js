@@ -1,7 +1,7 @@
 /**
  * UI绘制工具 - 提供常用的Canvas UI绘制方法
  */
-const config = require('./config');
+const config = require('../config');
 
 const UI = {
   /** 绘制圆角矩形 */
