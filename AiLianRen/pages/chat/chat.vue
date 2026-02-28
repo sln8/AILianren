@@ -235,6 +235,7 @@ import {
   showRewardedVideoAd, showInterstitialAd,
   shareForWords, getRemainingAdCount
 } from '@/utils/ad-manager.js'
+import { detectSensitiveWords, getSensitiveWarningMessage } from '@/utils/sensitive-filter.js'
 
 // 中文字符平均占用约3个token
 const CHINESE_CHAR_TOKEN_RATIO = 3
@@ -348,10 +349,8 @@ export default {
       this.dailyData = getDailyData()
       this.settings = getGameSettings()
 
-      // 如果是新开始的恋人（无历史消息），发送角色开场白
-      if (this.messages.length === 0) {
-        this.addAiMessage(this.currentCharacter.greeting, 'neutral')
-      }
+      // 如果是新开始的恋人（无历史消息），不主动发送开场白
+      // 让玩家先主动说话，更符合真实社交场景
 
       // 等待DOM更新后滚动到底部
       this.$nextTick(() => {
@@ -391,6 +390,17 @@ export default {
 
       const message = this.inputText.trim()
       const msgWordCount = message.length
+
+      // 敏感词检测 - 拦截包含不当内容的消息
+      const sensitiveResult = detectSensitiveWords(message)
+      if (sensitiveResult.hasSensitive) {
+        uni.showToast({
+          title: getSensitiveWarningMessage(),
+          icon: 'none',
+          duration: 2000
+        })
+        return
+      }
 
       // 检查字数是否足够（玩家输入 + 预留AI回复30字）
       if (this.userInfo.wordsBalance < msgWordCount + 30) {

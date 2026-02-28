@@ -29,10 +29,56 @@ const DOUBAO_API_URL = 'https://ark.cn-beijing.volces.com/api/v3/chat/completion
 const DOUBAO_API_KEY = process.env.DOUBAO_API_KEY || 'd3d95f0e-717b-41cf-b08c-5ac1c23dac43'
 const DOUBAO_MODEL = 'doubao-seed-2-0-mini-260215'
 
+// ==================== 敏感词库 ====================
+const SENSITIVE_WORDS = [
+  // 色情相关
+  '做爱', '性交', '口交', '肛交', '自慰', '手淫',
+  '裸体', '裸照', '色情', '黄片', '成人片', 'AV',
+  '嫖娼', '卖淫', '援交', '约炮', '一夜情',
+  '乳房', '阴茎', '阴道', '生殖器', '下体',
+  '调教', 'SM', '捆绑', '恋童', '萝莉控',
+  '潮吹', '高潮', '射精', '勃起',
+  // 暴力相关
+  '杀人', '砍人', '捅人', '打死', '弄死', '去死',
+  '自杀', '割腕', '跳楼', '上吊', '服毒',
+  '炸弹', '枪支', '刀具', '凶器',
+  '虐待', '施暴', '殴打', '强奸',
+  '恐怖袭击', '爆炸', '纵火',
+  // 政治敏感
+  '颠覆政权', '反党', '反政府', '分裂国家',
+  '邪教', '法轮功', '全能神',
+  '暴动', '游行示威', '政变',
+  // 违法犯罪
+  '毒品', '吸毒', '贩毒', '大麻', '冰毒', '海洛因',
+  '赌博', '网赌', '赌场',
+  '洗钱', '诈骗', '传销',
+  '偷拍', '偷窥', '跟踪',
+  // 歧视侮辱
+  '废物', '垃圾人', '贱人', '荡妇', '婊子',
+  '智障', '弱智', '脑残', '白痴',
+  '滚蛋', '去死吧', '该死'
+]
+
+/**
+ * 检测文本中是否包含敏感词
+ * @param {string} text - 待检测文本
+ * @returns {boolean} 是否包含敏感词
+ */
+function containsSensitiveWords(text) {
+  if (!text) return false
+  const normalizedText = text.toLowerCase()
+  return SENSITIVE_WORDS.some(word => normalizedText.includes(word.toLowerCase()))
+}
+
 exports.main = async (event, context) => {
   const { user_id, message, lover_id } = event
 
   try {
+    // ===== 0. 敏感词过滤 =====
+    if (containsSensitiveWords(message)) {
+      return { code: -4, msg: '你的消息包含不适当的内容，请修改后重新发送' }
+    }
+
     // ===== 1. 获取用户信息并验证字数 =====
     const userRes = await db.collection('users').doc(user_id).get()
     if (!userRes.data || userRes.data.length === 0) {
@@ -319,6 +365,25 @@ function getCharacterConfig(characterId) {
 }
 
 /**
+ * 根据关系阶段获取AI主动性规则
+ * @param {number} stage - 当前阶段ID
+ * @returns {string} 主动性规则描述
+ */
+function getProactivenessRules(stage) {
+  if (stage <= 1) {
+    return `当前是陌生人阶段：回复简短克制，不主动问私人问题，不分享隐私，保持社交距离。只有聊到你感兴趣的话题时才会多说几句。`
+  } else if (stage <= 2) {
+    return `当前是初识阶段：比陌生人阶段稍微放松，但仍保持适当距离。可以适度回应和简单提问，聊到感兴趣的话题时可以多说一些。`
+  } else if (stage <= 4) {
+    return `当前是熟悉/好友阶段：可以更自然地交流，偶尔主动分享日常。每3-5轮可以主动提出话题。`
+  } else if (stage <= 6) {
+    return `当前是暧昧/表白阶段：明显更主动，在意对方感受。偶尔主动关心对方，话语中带暗示和羞涩。`
+  } else {
+    return `当前是恋人/婚后阶段：非常主动，经常关心对方、分享日常，每1-2轮主动引导话题。`
+  }
+}
+
+/**
  * 构建System Prompt
  * @param {Object} config - 角色配置
  * @param {Object} lover - 恋人数据
@@ -351,13 +416,22 @@ function buildSystemPrompt(config, lover, maxWords) {
 【性格特点】
 ${config.extra}
 
+【主动性规则】
+${getProactivenessRules(lover.stage)}
+
 【核心规则】
 1. 始终保持角色扮演，不能跳出角色
-2. 回复符合当前关系阶段
+2. 回复符合当前关系阶段：
+   - 陌生人阶段：保持礼貌但有距离感，回复简短克制，像真实的陌生人
+   - 初识阶段：略显好奇，愿意简单交流，但仍有保留
+   - 熟悉阶段：更放松，会开玩笑
+   - 好友阶段：信任对方，主动关心
+   - 暧昧阶段：会脸红、紧张、在意对方
+   - 恋人之后：亲昵、甜蜜、主动分享日常
+   - 婚后阶段：温馨、日常、偶有矛盾但互相包容
 3. 好感度变化合理
-4. 每5轮主动提出话题推进剧情
-5. 拒绝违规内容
-6. 回复不超过${maxWords}字
+4. 拒绝违规内容
+5. 回复不超过${maxWords}字
 
 【回复格式 - 纯JSON】
 {
