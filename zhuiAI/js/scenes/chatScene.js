@@ -195,17 +195,15 @@ class ChatScene {
   /** 调起键盘 */
   _showKeyboard() {
     if (typeof tt.showKeyboard === 'function') {
-      // 先清理旧的事件监听器
-      tt.offKeyboardInput();
-      tt.offKeyboardConfirm();
-      tt.offKeyboardComplete();
-
       // 清理监听器的函数
       const cleanupListeners = () => {
         tt.offKeyboardInput();
         tt.offKeyboardConfirm();
         tt.offKeyboardComplete();
       };
+
+      // 先清理旧的事件监听器
+      cleanupListeners();
 
       // 注册事件监听器（在显示键盘之前）
       tt.onKeyboardInput((res) => {
